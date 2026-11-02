@@ -3,10 +3,11 @@
 interface
 
 uses
+  System.Classes,
   FireDAC.Comp.Client;
 
 type
-  TRepositorioBase = class
+  TRepositorioBase = class(TInterfacedObject)
   protected
     FConexao: TFDConnection;
     // Cria uma query já ligada à conexão. Quem chama deve liberar.
