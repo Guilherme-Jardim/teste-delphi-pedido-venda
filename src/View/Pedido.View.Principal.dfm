@@ -85,7 +85,7 @@
     Left = 16
     Top = 100
     Width = 948
-    Height = 84
+    Height = 140
     Anchors = [akLeft, akTop, akRight]
     Caption = ' Cliente '
     TabOrder = 1
@@ -116,6 +116,13 @@
       Width = 16
       Height = 17
       Caption = 'UF'
+    end
+    object lblObservacao: TLabel
+      Left = 16
+      Top = 80
+      Width = 65
+      Height = 17
+      Caption = 'Observa'#231#227'o'
     end
     object edtCodCliente: TEdit
       Left = 16
@@ -154,10 +161,19 @@
       ReadOnly = True
       TabOrder = 3
     end
+    object edtObservacao: TEdit
+      Left = 16
+      Top = 100
+      Width = 904
+      Height = 25
+      MaxLength = 200
+      TabOrder = 4
+      OnKeyPress = CampoCodigoKeyPress
+    end
   end
   object gbItem: TGroupBox
     Left = 16
-    Top = 192
+    Top = 248
     Width = 948
     Height = 84
     Anchors = [akLeft, akTop, akRight]
@@ -240,9 +256,9 @@
   end
   object sgItens: TStringGrid
     Left = 16
-    Top = 288
+    Top = 344
     Width = 948
-    Height = 292
+    Height = 236
     Anchors = [akLeft, akTop, akRight, akBottom]
     ColCount = 5
     DefaultRowHeight = 26

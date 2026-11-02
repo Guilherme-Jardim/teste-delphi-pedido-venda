@@ -12,6 +12,7 @@ type
     FNumero: Integer;
     FDataEmissao: TDate;
     FCodigoCliente: Integer;
+    FObservacao: string;
     FItens: TObjectList<TPedidoItem>;
     function GetValorTotal: Currency;
   public
@@ -25,6 +26,7 @@ type
     property Numero: Integer read FNumero write FNumero;
     property DataEmissao: TDate read FDataEmissao write FDataEmissao;
     property CodigoCliente: Integer read FCodigoCliente write FCodigoCliente;
+    property Observacao: string read FObservacao write FObservacao;
     property Itens: TObjectList<TPedidoItem> read FItens;
     // Sempre calculado a partir dos itens: não existe total "guardado"
     // que possa ficar desatualizado depois de uma exclusão.

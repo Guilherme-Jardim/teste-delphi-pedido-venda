@@ -35,6 +35,8 @@ type
     edtNomeCliente: TEdit;
     edtCidadeCliente: TEdit;
     edtUFCliente: TEdit;
+    lblObservacao: TLabel;
+    edtObservacao: TEdit;
     gbItem: TGroupBox;
     lblCodProduto: TLabel;
     lblDescricaoProduto: TLabel;
@@ -200,6 +202,7 @@ begin
     LimparCliente;
   end;
 
+  edtObservacao.Text := FController.Pedido.Observacao;
   LimparCamposItem;
   AtualizarGrid;
   AtualizarTotal;
@@ -537,6 +540,7 @@ end;
 procedure TfrmPedidoVenda.btnGravarClick(Sender: TObject);
 begin
   LimparMensagem;
+  FController.Pedido.Observacao := Trim(edtObservacao.Text);
   try
     FController.GravarPedido;
   except

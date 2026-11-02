@@ -35,12 +35,14 @@ const
     'SELECT NEXT VALUE FOR GEN_PEDIDO_NUMERO AS NUMERO FROM RDB$DATABASE';
 
   SQL_INSERIR_CABECALHO =
-    'INSERT INTO PEDIDO (NUMERO_PEDIDO, DATA_EMISSAO, CODIGO_CLIENTE, VALOR_TOTAL) ' +
-    'VALUES (:NUMERO, :DATA_EMISSAO, :CODIGO_CLIENTE, :VALOR_TOTAL)';
+    'INSERT INTO PEDIDO (NUMERO_PEDIDO, DATA_EMISSAO, CODIGO_CLIENTE, VALOR_TOTAL, ' +
+    'OBSERVACAO) ' +
+    'VALUES (:NUMERO, :DATA_EMISSAO, :CODIGO_CLIENTE, :VALOR_TOTAL, :OBSERVACAO)';
 
   SQL_ATUALIZAR_CABECALHO =
     'UPDATE PEDIDO SET DATA_EMISSAO = :DATA_EMISSAO, ' +
-    'CODIGO_CLIENTE = :CODIGO_CLIENTE, VALOR_TOTAL = :VALOR_TOTAL ' +
+    'CODIGO_CLIENTE = :CODIGO_CLIENTE, VALOR_TOTAL = :VALOR_TOTAL, ' +
+    'OBSERVACAO = :OBSERVACAO ' +
     'WHERE NUMERO_PEDIDO = :NUMERO';
 
   SQL_EXCLUIR_ITENS =
@@ -52,7 +54,7 @@ const
     'VALUES (:NUMERO, :CODIGO_PRODUTO, :QUANTIDADE, :VLR_UNITARIO, :VLR_TOTAL)';
 
   SQL_BUSCAR_CABECALHO =
-    'SELECT NUMERO_PEDIDO, DATA_EMISSAO, CODIGO_CLIENTE, VALOR_TOTAL ' +
+    'SELECT NUMERO_PEDIDO, DATA_EMISSAO, CODIGO_CLIENTE, VALOR_TOTAL, OBSERVACAO ' +
     'FROM PEDIDO WHERE NUMERO_PEDIDO = :NUMERO';
 
   SQL_BUSCAR_ITENS =
@@ -91,6 +93,7 @@ begin
     Query.ParamByName('DATA_EMISSAO').AsDate := APedido.DataEmissao;
     Query.ParamByName('CODIGO_CLIENTE').AsInteger := APedido.CodigoCliente;
     Query.ParamByName('VALOR_TOTAL').AsCurrency := APedido.ValorTotal;
+    Query.ParamByName('OBSERVACAO').AsString := APedido.Observacao;
     Query.ExecSQL;
   finally
     Query.Free;
@@ -107,6 +110,7 @@ begin
     Query.ParamByName('DATA_EMISSAO').AsDate := APedido.DataEmissao;
     Query.ParamByName('CODIGO_CLIENTE').AsInteger := APedido.CodigoCliente;
     Query.ParamByName('VALOR_TOTAL').AsCurrency := APedido.ValorTotal;
+    Query.ParamByName('OBSERVACAO').AsString := APedido.Observacao;
     Query.ExecSQL;
     if Query.RowsAffected = 0 then
       raise EPedidoNaoEncontrado.Create(APedido.Numero);
@@ -218,6 +222,7 @@ begin
       Result.Numero := Query.FieldByName('NUMERO_PEDIDO').AsInteger;
       Result.DataEmissao := Query.FieldByName('DATA_EMISSAO').AsDateTime;
       Result.CodigoCliente := Query.FieldByName('CODIGO_CLIENTE').AsInteger;
+      Result.Observacao := Query.FieldByName('OBSERVACAO').AsString;
       CarregarItens(Result);
     except
       Result.Free;
