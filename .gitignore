@@ -1,0 +1,25 @@
+# Delphi
+__history/
+__recovery/
+*.dcu
+*.exe
+*.dll.bak
+*.local
+*.identcache
+*.stat
+*.tvsconfig
+*.dsk
+*.rsm
+*.map
+*.drc
+Win32/
+Win64/
+!bin/Win32/
+!bin/Win64/
+
+# Config local (nunca versionar dados reais)
+config.ini
+
+# Bancos de teste
+*.fdb
+*.FDB
