@@ -1,0 +1,14 @@
+; Copie este arquivo para config.ini (na raiz do projeto) e ajuste os valores.
+; O config.ini real nao e versionado.
+
+[Database]
+; Caminho do arquivo .fdb, como o servidor Firebird enxerga
+Database=C:\dados\PEDIDOS.FDB
+Username=SYSDBA
+Password=sua_senha_aqui
+; Deixe Server vazio para conexao embarcada/local sem TCP
+Server=localhost
+Port=3050
+; Caminho da fbclient.dll (relativo a este arquivo ou absoluto).
+; Use bin\Win32 para compilar em 32 bits e bin\Win64 para 64 bits.
+ClientLibrary=bin\Win32\fbclient.dll
