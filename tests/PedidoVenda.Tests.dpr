@@ -5,11 +5,29 @@
 uses
   System.SysUtils,
   DUnitX.Loggers.Console,
+  DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
+  Pedido.Infra.Idioma in '..\src\Infra\Pedido.Infra.Idioma.pas',
+  Pedido.Infra.Log in '..\src\Infra\Pedido.Infra.Log.pas',
+  Pedido.Infra.Config in '..\src\Infra\Pedido.Infra.Config.pas',
+  Pedido.Infra.Conexao in '..\src\Infra\Pedido.Infra.Conexao.pas',
   Pedido.Model.Excecoes in '..\src\Model\Pedido.Model.Excecoes.pas',
+  Pedido.Model.Cliente in '..\src\Model\Pedido.Model.Cliente.pas',
+  Pedido.Model.Produto in '..\src\Model\Pedido.Model.Produto.pas',
   Pedido.Model.PedidoItem in '..\src\Model\Pedido.Model.PedidoItem.pas',
   Pedido.Model.Pedido in '..\src\Model\Pedido.Model.Pedido.pas',
-  Pedido.Tests.Totalizacao in 'Pedido.Tests.Totalizacao.pas';
+  Pedido.DAO.Base in '..\src\DAO\Pedido.DAO.Base.pas',
+  Pedido.DAO.Cliente in '..\src\DAO\Pedido.DAO.Cliente.pas',
+  Pedido.DAO.Produto in '..\src\DAO\Pedido.DAO.Produto.pas',
+  Pedido.DAO.Pedido in '..\src\DAO\Pedido.DAO.Pedido.pas',
+  Pedido.Controller.Cliente in '..\src\Controller\Pedido.Controller.Cliente.pas',
+  Pedido.Controller.Produto in '..\src\Controller\Pedido.Controller.Produto.pas',
+  Pedido.Controller.Pedido in '..\src\Controller\Pedido.Controller.Pedido.pas',
+  Pedido.Tests.Totalizacao in 'Pedido.Tests.Totalizacao.pas',
+  Pedido.Tests.ValidacaoItem in 'Pedido.Tests.ValidacaoItem.pas',
+  Pedido.Tests.Idioma in 'Pedido.Tests.Idioma.pas',
+  Pedido.Tests.Controller in 'Pedido.Tests.Controller.pas',
+  Pedido.Tests.Integracao in 'Pedido.Tests.Integracao.pas';
 
 var
   Runner: ITestRunner;
@@ -20,6 +38,7 @@ begin
     Runner := TDUnitX.CreateRunner;
     Runner.UseRTTI := True;
     Runner.AddLogger(TDUnitXConsoleLogger.Create(True));
+    Runner.AddLogger(TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile));
     Resultado := Runner.Execute;
     if not Resultado.AllPassed then
       System.ExitCode := 1;

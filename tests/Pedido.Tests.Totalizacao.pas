@@ -12,7 +12,7 @@ type
   [TestFixture]
   TTestesTotalizacao = class
   private
-    FPedido: TPedido;
+    FPedido: TPedidoModel;
     procedure AdicionarItem(ACodigo: Integer; AQuantidade: Double; AValor: Currency);
   public
     [Setup]
@@ -53,7 +53,7 @@ uses
 
 procedure TTestesTotalizacao.Setup;
 begin
-  FPedido := TPedido.Create;
+  FPedido := TPedidoModel.Create;
 end;
 
 procedure TTestesTotalizacao.TearDown;
@@ -64,7 +64,7 @@ end;
 procedure TTestesTotalizacao.AdicionarItem(ACodigo: Integer; AQuantidade: Double;
   AValor: Currency);
 begin
-  FPedido.AdicionarItem(TPedidoItem.Create(ACodigo, 'Produto ' + IntToStr(ACodigo),
+  FPedido.AdicionarItem(TPedidoItemModel.Create(ACodigo, 'Produto ' + IntToStr(ACodigo),
     AQuantidade, AValor));
 end;
 
@@ -129,7 +129,7 @@ procedure TTestesTotalizacao.AtualizarItemRecalculaOTotal;
 begin
   AdicionarItem(1, 2, 10);
   AdicionarItem(2, 1, 5);
-  FPedido.AtualizarItem(0, TPedidoItem.Create(1, 'Produto 1', 4, 10));
+  FPedido.AtualizarItem(0, TPedidoItemModel.Create(1, 'Produto 1', 4, 10));
   Assert.AreEqual(Currency(45), FPedido.ValorTotal);
 end;
 
@@ -138,7 +138,7 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItem.Create(1, 'Produto 1', 0, 10).Free;
+      TPedidoItemModel.Create(1, 'Produto 1', 0, 10).Free;
     end,
     EValidacao);
 end;
@@ -148,7 +148,7 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItem.Create(1, 'Produto 1', 1, -1).Free;
+      TPedidoItemModel.Create(1, 'Produto 1', 1, -1).Free;
     end,
     EValidacao);
 end;
