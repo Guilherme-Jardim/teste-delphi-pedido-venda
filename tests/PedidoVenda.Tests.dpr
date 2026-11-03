@@ -10,6 +10,12 @@ uses
   Pedido.Infra.Idioma in '..\src\Infra\Pedido.Infra.Idioma.pas',
   Pedido.Infra.Log in '..\src\Infra\Pedido.Infra.Log.pas',
   Pedido.Infra.Versao in '..\src\Infra\Pedido.Infra.Versao.pas',
+  Pedido.Infra.Validacao in '..\src\Infra\Pedido.Infra.Validacao.pas',
+  Pedido.Infra.EsquemaBanco in '..\src\Infra\Pedido.Infra.EsquemaBanco.pas',
+  Pedido.Infra.BancoDados.Tipos in '..\src\Infra\Pedido.Infra.BancoDados.Tipos.pas',
+  Pedido.Infra.BancoDados.FireDAC in '..\src\Infra\Pedido.Infra.BancoDados.FireDAC.pas',
+  Pedido.Infra.RegistroBanco in '..\src\Infra\Pedido.Infra.RegistroBanco.pas',
+  Pedido.Infra.Inicializador in '..\src\Infra\Pedido.Infra.Inicializador.pas',
   Pedido.Infra.Config in '..\src\Infra\Pedido.Infra.Config.pas',
   Pedido.Infra.Conexao in '..\src\Infra\Pedido.Infra.Conexao.pas',
   Pedido.Model.Excecoes in '..\src\Model\Pedido.Model.Excecoes.pas',
@@ -33,7 +39,12 @@ uses
   Pedido.Tests.Idioma in 'Pedido.Tests.Idioma.pas',
   Pedido.Tests.Versao in 'Pedido.Tests.Versao.pas',
   Pedido.Tests.Controller in 'Pedido.Tests.Controller.pas',
-  Pedido.Tests.Integracao in 'Pedido.Tests.Integracao.pas';
+  Pedido.Tests.Integracao in 'Pedido.Tests.Integracao.pas',
+  Pedido.Tests.Validacao in 'Pedido.Tests.Validacao.pas',
+  Pedido.Tests.Config in 'Pedido.Tests.Config.pas',
+  Pedido.Tests.Inicializador in 'Pedido.Tests.Inicializador.pas',
+  Pedido.Tests.EsquemaESeguranca in 'Pedido.Tests.EsquemaESeguranca.pas',
+  Pedido.Tests.BancoReal in 'Pedido.Tests.BancoReal.pas';
 
 var
   Runner: ITestRunner;
