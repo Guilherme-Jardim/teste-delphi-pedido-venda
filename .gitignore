@@ -17,6 +17,20 @@ Win64/
 !bin/Win32/
 !bin/Win64/
 
+# Saídas e arquivos gerados pela IDE
+*.bpl
+*.dcp
+*.bpi
+*.lib
+*.otares
+*_Icon*.ico
+*.skincfg
+*.dproj.local
+*.groupproj.local
+
+# Resultado dos testes
+dunitx-results.xml
+
 # Config local (nunca versionar dados reais)
 config.ini
 
