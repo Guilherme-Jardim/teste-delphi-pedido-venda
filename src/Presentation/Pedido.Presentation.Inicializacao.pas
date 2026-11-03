@@ -1,4 +1,4 @@
-﻿unit Pedido.View.Inicializacao;
+﻿unit Pedido.Presentation.Inicializacao;
 
 { Janelas da inicialização: avisos com botões de ação (TTaskDialog) e a tela
   de configuração. É a implementação com VCL do contrato IInteracaoInicializacao;
@@ -27,7 +27,7 @@ uses
   System.UITypes,
   Vcl.Dialogs,
   Pedido.Infra.Idioma,
-  Pedido.View.ConfiguracaoBanco;
+  Pedido.Presentation.ConfiguracaoBanco;
 
 const
   // ModalResult de cada botão = BASE + ordem da ação.

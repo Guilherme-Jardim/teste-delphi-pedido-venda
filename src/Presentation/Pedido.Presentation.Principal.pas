@@ -1,4 +1,4 @@
-﻿unit Pedido.View.Principal;
+﻿unit Pedido.Presentation.Principal;
 
 { Tela do Pedido de Venda. Todo o visual está no .dfm, montado com os
   componentes do pacote Componentes.Pedido. Aqui ficam só os eventos:
@@ -18,9 +18,9 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
-  Pedido.Controller.Interfaces,
+  Pedido.Application.Interfaces,
+  Pedido.Domain.Pedido,
   Pedido.Infra.Idioma,
-  Pedido.Model.Pedido,
   ComponentIcons,
   FlagButton,
   RoundButton,
@@ -82,10 +82,8 @@ type
     procedure btnGravarClick(Sender: TObject);
     procedure btnSairClick(Sender: TObject);
   private
-    FPedidoController: IPedidoController;
-    FClienteController: IClienteController;
-    FProdutoController: IProdutoController;
-    FPedido: TPedidoModel;
+    FCasosDeUso: TCasosDeUsoPedido;
+    FPedido: TPedido;
     FIndiceEmEdicao: Integer;
 
     procedure NovoPedido;
@@ -105,9 +103,8 @@ type
     function LerCodigo(ACampo: TModernEdit; out ACodigo: Integer): Boolean;
     function PedirNumeroPedido(const ATitulo: string; out ANumero: Integer): Boolean;
   public
-    // Recebe as dependências por interface (montadas na raiz de composição).
-    procedure Iniciar(const APedidoController: IPedidoController;
-      const AClienteController: IClienteController; const AProdutoController: IProdutoController);
+    // Recebe os casos de uso (montados na raiz de composição).
+    procedure Iniciar(const ACasosDeUso: TCasosDeUsoPedido);
   end;
 
 var
@@ -120,12 +117,13 @@ implementation
 uses
   Pedido.Infra.Log,
   Pedido.Infra.Versao,
-  Pedido.Model.Cliente,
-  Pedido.Model.Produto,
-  Pedido.Model.PedidoItem,
-  Pedido.Model.Excecoes,
-  Pedido.View.Dialogos,
-  Pedido.View.NumeroPedido;
+  Pedido.Domain.Cliente,
+  Pedido.Domain.Erros,
+  Pedido.Domain.PedidoItem,
+  Pedido.Domain.Produto,
+  Pedido.Presentation.TradutorErros,
+  Pedido.Presentation.Dialogos,
+  Pedido.Presentation.NumeroPedido;
 
 const
   COL_CODIGO = 0;
@@ -144,7 +142,7 @@ end;
 procedure TfrmPedidoVenda.FormCreate(Sender: TObject);
 begin
   FIndiceEmEdicao := -1;
-  FPedido := TPedidoModel.Create;
+  FPedido := TPedido.Create;
   CarregarIdiomaSalvo;
   AplicarIdioma;
 end;
@@ -154,12 +152,9 @@ begin
   FPedido.Free;
 end;
 
-procedure TfrmPedidoVenda.Iniciar(const APedidoController: IPedidoController;
-  const AClienteController: IClienteController; const AProdutoController: IProdutoController);
+procedure TfrmPedidoVenda.Iniciar(const ACasosDeUso: TCasosDeUsoPedido);
 begin
-  FPedidoController := APedidoController;
-  FClienteController := AClienteController;
-  FProdutoController := AProdutoController;
+  FCasosDeUso := ACasosDeUso;
   Application.OnException := TratarExcecao;
   AtualizarTela;
   ActiveControl := edtCodCliente.Edit;
@@ -235,7 +230,7 @@ begin
       lblNumeroPedido.Caption := Tr('pedido.numero', [FPedido.Numero])
     else
       lblNumeroPedido.Caption := Tr('pedido.novo');
-    if FPedidoController <> nil then
+    if FCasosDeUso.Gravar <> nil then
     begin
       AtualizarGrade;
       AtualizarBotaoItem;
@@ -312,11 +307,11 @@ end;
 
 procedure TfrmPedidoVenda.PreencherCliente(ACodigo: Integer);
 var
-  Cliente: TClienteModel;
+  Cliente: TCliente;
 begin
-  Cliente := FClienteController.GetCliente(ACodigo);
+  Cliente := FCasosDeUso.ConsultarCliente.Executar(ACodigo);
   try
-    FPedido.CodigoCliente := Cliente.Codigo;
+    FPedido.InformarCliente(Cliente.Codigo);
     edtCodCliente.Texto := IntToStr(Cliente.Codigo);
     edtNomeCliente.Texto := Cliente.Nome;
     edtCidadeCliente.Texto := Cliente.Cidade;
@@ -329,7 +324,7 @@ end;
 procedure TfrmPedidoVenda.NovoPedido;
 begin
   FPedido.Free;
-  FPedido := TPedidoModel.Create;
+  FPedido := TPedido.Create;
   FIndiceEmEdicao := -1;
   AtualizarTela;
 end;
@@ -360,7 +355,7 @@ end;
 procedure TfrmPedidoVenda.AtualizarGrade;
 var
   I: Integer;
-  Item: TPedidoItemModel;
+  Item: TPedidoItem;
 begin
   if FPedido.Itens.Count = 0 then
   begin
@@ -374,16 +369,16 @@ begin
     Item := FPedido.Itens[I];
     gridItens.Cells[COL_CODIGO, I + 1] := IntToStr(Item.CodigoProduto);
     gridItens.Cells[COL_DESCRICAO, I + 1] := Item.Descricao;
-    gridItens.Cells[COL_QUANTIDADE, I + 1] := FormatFloat('#,##0.###', Item.Quantidade);
-    gridItens.Cells[COL_VLR_UNITARIO, I + 1] := FormatarMoeda(Item.VlrUnitario);
-    gridItens.Cells[COL_VLR_TOTAL, I + 1] := FormatarMoeda(Item.VlrTotal);
+    gridItens.Cells[COL_QUANTIDADE, I + 1] := FormatFloat('#,##0.###', Item.Quantidade.Valor);
+    gridItens.Cells[COL_VLR_UNITARIO, I + 1] := FormatarMoeda(Item.VlrUnitario.Valor);
+    gridItens.Cells[COL_VLR_TOTAL, I + 1] := FormatarMoeda(Item.VlrTotal.Valor);
   end;
 end;
 
 procedure TfrmPedidoVenda.AtualizarTotal;
 begin
   // Sempre calculado a partir dos itens.
-  lblTotal.Caption := 'R$ ' + FormatarMoeda(FPedido.ValorTotal);
+  lblTotal.Caption := 'R$ ' + FormatarMoeda(FPedido.ValorTotal.Valor);
 end;
 
 procedure TfrmPedidoVenda.AtualizarBotaoItem;
@@ -407,13 +402,13 @@ begin
   avisoMensagem.Limpar;
   if Trim(edtCodCliente.Texto) = '' then
   begin
-    FPedido.CodigoCliente := 0;
+    FPedido.RemoverCliente;
     LimparCliente;
     Exit;
   end;
   if not LerCodigo(edtCodCliente, Codigo) then
   begin
-    FPedido.CodigoCliente := 0;
+    FPedido.RemoverCliente;
     LimparCliente;
     MostrarErro(Tr('msg.cliente_invalido'));
     Exit;
@@ -421,11 +416,11 @@ begin
   try
     PreencherCliente(Codigo);
   except
-    on E: EClienteNaoEncontrado do
+    on E: EDominioErro do
     begin
-      FPedido.CodigoCliente := 0;
+      FPedido.RemoverCliente;
       LimparCliente;
-      MostrarErro(E.Message);
+      MostrarErro(MensagemDoErro(E));
     end;
   end;
 end;
@@ -433,7 +428,7 @@ end;
 procedure TfrmPedidoVenda.edtCodProdutoSaida(Sender: TObject);
 var
   Codigo: Integer;
-  Produto: TProdutoModel;
+  Produto: TProduto;
 begin
   avisoMensagem.Limpar;
   if Trim(edtCodProduto.Texto) = '' then
@@ -448,20 +443,20 @@ begin
     Exit;
   end;
   try
-    Produto := FProdutoController.GetProduto(Codigo);
+    Produto := FCasosDeUso.ConsultarProduto.Executar(Codigo);
     try
       edtDescricao.Texto := Produto.Descricao;
       // Sugere o preço de venda; o operador pode alterar.
       if FIndiceEmEdicao < 0 then
-        edtVlrUnitario.Texto := FormatFloat('0.00', Produto.PrecoVenda);
+        edtVlrUnitario.Texto := FormatFloat('0.00', Produto.PrecoVenda.Valor);
     finally
       Produto.Free;
     end;
   except
-    on E: EProdutoNaoEncontrado do
+    on E: EDominioErro do
     begin
       edtDescricao.Limpar;
-      MostrarErro(E.Message);
+      MostrarErro(MensagemDoErro(E));
     end;
   end;
 end;
@@ -471,7 +466,7 @@ var
   Codigo, Indice: Integer;
   Quantidade: Double;
   Valor: Currency;
-  Item: TPedidoItemModel;
+  Item: TPedidoItem;
 begin
   avisoMensagem.Limpar;
   if not LerCodigo(edtCodProduto, Codigo) then
@@ -494,7 +489,7 @@ begin
   end;
 
   try
-    Item := FPedidoController.CriarItem(Codigo, Quantidade, Valor);
+    Item := FCasosDeUso.CriarItem.Executar(Codigo, Quantidade, Valor);
     if FIndiceEmEdicao >= 0 then
     begin
       Indice := FIndiceEmEdicao;
@@ -504,9 +499,9 @@ begin
     else
       Indice := FPedido.AdicionarItem(Item);
   except
-    on E: EPedidoErro do
+    on E: EDominioErro do
     begin
-      MostrarErro(E.Message);
+      MostrarErro(MensagemDoErro(E));
       Exit;
     end;
   end;
@@ -549,7 +544,7 @@ end;
 procedure TfrmPedidoVenda.CarregarItemSelecionado;
 var
   Indice: Integer;
-  Item: TPedidoItemModel;
+  Item: TPedidoItem;
 begin
   avisoMensagem.Limpar;
   Indice := gridItens.Row - 1;
@@ -563,8 +558,8 @@ begin
   Item := FPedido.Itens[Indice];
   edtCodProduto.Texto := IntToStr(Item.CodigoProduto);
   edtDescricao.Texto := Item.Descricao;
-  edtQuantidade.Texto := FloatToStr(Item.Quantidade);
-  edtVlrUnitario.Texto := FormatFloat('0.00', Item.VlrUnitario);
+  edtQuantidade.Texto := FloatToStr(Item.Quantidade.Valor);
+  edtVlrUnitario.Texto := FormatFloat('0.00', Item.VlrUnitario.Valor);
   AtualizarBotaoItem;
   edtQuantidade.SetFocus;
 end;
@@ -612,17 +607,17 @@ end;
 procedure TfrmPedidoVenda.btnCarregarClick(Sender: TObject);
 var
   Numero: Integer;
-  Carregado: TPedidoModel;
+  Carregado: TPedido;
 begin
   avisoMensagem.Limpar;
   if not PedirNumeroPedido(Tr('dlg.numero_carregar'), Numero) then
     Exit;
   try
-    Carregado := FPedidoController.GetPedido(Numero);
+    Carregado := FCasosDeUso.Carregar.Executar(Numero);
   except
-    on E: EPedidoErro do
+    on E: EDominioErro do
     begin
-      MostrarErro(E.Message);
+      MostrarErro(MensagemDoErro(E));
       Exit;
     end;
   end;
@@ -646,11 +641,11 @@ begin
     Exit;
 
   try
-    FPedidoController.Cancelar(Numero);
+    FCasosDeUso.Cancelar.Executar(Numero);
   except
-    on E: EPedidoErro do
+    on E: EDominioErro do
     begin
-      MostrarErro(E.Message);
+      MostrarErro(MensagemDoErro(E));
       Exit;
     end;
   end;
@@ -666,13 +661,13 @@ var
   Numero: Integer;
 begin
   avisoMensagem.Limpar;
-  FPedido.Observacao := Trim(edtObservacao.Texto);
   try
-    FPedidoController.Gravar(FPedido);
+    FPedido.DefinirObservacao(edtObservacao.Texto);
+    FCasosDeUso.Gravar.Executar(FPedido);
   except
-    on E: EPedidoErro do
+    on E: EDominioErro do
     begin
-      MostrarErro(E.Message);
+      MostrarErro(MensagemDoErro(E));
       Exit;
     end;
   end;

@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{FA928A3F-1348-4EDE-8943-0AEB15E42CA6}</ProjectGuid>
+        <ProjectGuid>{E35BED1C-7B78-4DD9-BEAF-A21E3CC2CF0F}</ProjectGuid>
         <MainSource>PedidoVenda.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
@@ -66,7 +66,7 @@
         <SanitizedProjectName>PedidoVenda</SanitizedProjectName>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Locale>1046</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=Pedido de Venda;FileVersion=1.1.0.0;InternalName=PedidoVenda;LegalCopyright=;LegalTrademarks=;OriginalFilename=PedidoVenda.exe;ProgramID=br.pedidovenda;ProductName=Pedido de Venda;ProductVersion=1.1.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=Pedido de Venda;FileVersion=1.2.0.0;InternalName=PedidoVenda;LegalCopyright=;LegalTrademarks=;OriginalFilename=PedidoVenda.exe;ProgramID=br.pedidovenda;ProductName=Pedido de Venda;ProductVersion=1.2.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android64)'!=''">
         <Android_LauncherIcon192>$(BDS)\bin\Artwork\Android\FM_LauncherIcon_192x192.png</Android_LauncherIcon192>
@@ -79,10 +79,10 @@
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
-        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_MinorVer>2</VerInfo_MinorVer>
         <VerInfo_Release>0</VerInfo_Release>
         <VerInfo_Build>0</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=Pedido de Venda;FileVersion=1.1.0.0;InternalName=PedidoVenda;LegalCopyright=;LegalTrademarks=;OriginalFilename=PedidoVenda.exe;ProgramID=br.pedidovenda;ProductName=Pedido de Venda;ProductVersion=1.1.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=Pedido de Venda;FileVersion=1.2.0.0;InternalName=PedidoVenda;LegalCopyright=;LegalTrademarks=;OriginalFilename=PedidoVenda.exe;ProgramID=br.pedidovenda;ProductName=Pedido de Venda;ProductVersion=1.2.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1046</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <Icon_MainIcon>Recursos\PedidoVenda.ico</Icon_MainIcon>
@@ -118,22 +118,34 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="Model\Pedido.Model.Excecoes.pas"/>
-        <DCCReference Include="Model\Pedido.Model.Cliente.pas"/>
-        <DCCReference Include="Model\Pedido.Model.Produto.pas"/>
-        <DCCReference Include="Model\Pedido.Model.PedidoItem.pas"/>
-        <DCCReference Include="Model\Pedido.Model.Pedido.pas"/>
-        <DCCReference Include="Infra\Pedido.Infra.Idioma.pas"/>
-        <DCCReference Include="Infra\Pedido.Infra.Log.pas"/>
-        <DCCReference Include="Infra\Pedido.Infra.Config.pas"/>
-        <DCCReference Include="Infra\Pedido.Infra.Conexao.pas"/>
-        <DCCReference Include="DAO\Pedido.DAO.Base.pas"/>
-        <DCCReference Include="DAO\Pedido.DAO.Cliente.pas"/>
-        <DCCReference Include="DAO\Pedido.DAO.Produto.pas"/>
-        <DCCReference Include="DAO\Pedido.DAO.Pedido.pas"/>
-        <DCCReference Include="Controller\Pedido.Controller.Cliente.pas"/>
-        <DCCReference Include="Controller\Pedido.Controller.Produto.pas"/>
-        <DCCReference Include="Controller\Pedido.Controller.Pedido.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.Erros.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.ObjetosValor.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.Cliente.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.Produto.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.PedidoItem.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.Pedido.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.Repositorios.pas"/>
+        <DCCReference Include="Domain\Pedido.Domain.Eventos.pas"/>
+        <DCCReference Include="Application\Pedido.Application.Interfaces.pas"/>
+        <DCCReference Include="Application\Pedido.Application.CasosDeUso.pas"/>
+        <DCCReference Include="Application\Pedido.Application.Eventos.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Idioma.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Log.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Versao.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Validacao.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Config.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.EsquemaBanco.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.BancoDados.Tipos.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.BancoDados.FireDAC.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.RegistroBanco.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Inicializador.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Conexao.pas"/>
+        <DCCReference Include="Infrastructure\Persistence\Pedido.Infra.Persistencia.Base.pas"/>
+        <DCCReference Include="Infrastructure\Persistence\Pedido.Infra.Persistencia.Cliente.pas"/>
+        <DCCReference Include="Infrastructure\Persistence\Pedido.Infra.Persistencia.Produto.pas"/>
+        <DCCReference Include="Infrastructure\Persistence\Pedido.Infra.Persistencia.Pedido.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.AssinanteLog.pas"/>
+        <DCCReference Include="Infrastructure\Pedido.Infra.Composicao.pas"/>
         <DCCReference Include="..\Componentes\Componentes Pedido\Core\ComponentTheme.pas"/>
         <DCCReference Include="..\Componentes\Componentes Pedido\Core\ComponentIcons.pas"/>
         <DCCReference Include="..\Componentes\Componentes Pedido\Core\ComponentUtils.pas"/>
@@ -143,11 +155,16 @@
         <DCCReference Include="..\Componentes\Componentes Pedido\Edits\ModernEdit.pas"/>
         <DCCReference Include="..\Componentes\Componentes Pedido\Alerts\AlertBar.pas"/>
         <DCCReference Include="..\Componentes\Componentes Pedido\Grids\ModernGrid.pas"/>
-        <DCCReference Include="View\Pedido.View.Dialogos.pas"/>
-        <DCCReference Include="View\Pedido.View.NumeroPedido.pas">
+        <DCCReference Include="Presentation\Pedido.Presentation.TradutorErros.pas"/>
+        <DCCReference Include="Presentation\Pedido.Presentation.Dialogos.pas"/>
+        <DCCReference Include="Presentation\Pedido.Presentation.ConfiguracaoBanco.pas">
+            <Form>frmConfiguracaoBanco</Form>
+        </DCCReference>
+        <DCCReference Include="Presentation\Pedido.Presentation.Inicializacao.pas"/>
+        <DCCReference Include="Presentation\Pedido.Presentation.NumeroPedido.pas">
             <Form>frmNumeroPedido</Form>
         </DCCReference>
-        <DCCReference Include="View\Pedido.View.Principal.pas">
+        <DCCReference Include="Presentation\Pedido.Presentation.Principal.pas">
             <Form>frmPedidoVenda</Form>
         </DCCReference>
         <BuildConfiguration Include="Base">
