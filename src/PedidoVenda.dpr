@@ -14,7 +14,13 @@ uses
   Pedido.Infra.Idioma in 'Infra\Pedido.Infra.Idioma.pas',
   Pedido.Infra.Log in 'Infra\Pedido.Infra.Log.pas',
   Pedido.Infra.Versao in 'Infra\Pedido.Infra.Versao.pas',
+  Pedido.Infra.Validacao in 'Infra\Pedido.Infra.Validacao.pas',
   Pedido.Infra.Config in 'Infra\Pedido.Infra.Config.pas',
+  Pedido.Infra.EsquemaBanco in 'Infra\Pedido.Infra.EsquemaBanco.pas',
+  Pedido.Infra.BancoDados.Tipos in 'Infra\Pedido.Infra.BancoDados.Tipos.pas',
+  Pedido.Infra.BancoDados.FireDAC in 'Infra\Pedido.Infra.BancoDados.FireDAC.pas',
+  Pedido.Infra.RegistroBanco in 'Infra\Pedido.Infra.RegistroBanco.pas',
+  Pedido.Infra.Inicializador in 'Infra\Pedido.Infra.Inicializador.pas',
   Pedido.Infra.Conexao in 'Infra\Pedido.Infra.Conexao.pas',
   Pedido.DAO.Base in 'DAO\Pedido.DAO.Base.pas',
   Pedido.DAO.Cliente in 'DAO\Pedido.DAO.Cliente.pas',
@@ -36,6 +42,8 @@ uses
   AlertBar in '..\Componentes\Componentes Pedido\Alerts\AlertBar.pas',
   ModernGrid in '..\Componentes\Componentes Pedido\Grids\ModernGrid.pas',
   Pedido.View.Dialogos in 'View\Pedido.View.Dialogos.pas',
+  Pedido.View.ConfiguracaoBanco in 'View\Pedido.View.ConfiguracaoBanco.pas' {frmConfiguracaoBanco},
+  Pedido.View.Inicializacao in 'View\Pedido.View.Inicializacao.pas',
   Pedido.View.NumeroPedido in 'View\Pedido.View.NumeroPedido.pas' {frmNumeroPedido},
   Pedido.View.Principal in 'View\Pedido.View.Principal.pas' {frmPedidoVenda};
 
@@ -46,17 +54,9 @@ begin
   Application.MessageBox(PChar(AMensagem), PChar(Tr('app.titulo')), MB_OK or MB_ICONERROR);
 end;
 
-// Mensagens de configuração são nossas e podem aparecer; erro de banco mostra só um aviso geral.
-function MensagemSegura(E: Exception): string;
-begin
-  if E is EConfigInvalida then
-    Result := E.Message
-  else
-    Result := Tr('msg.falha_consulta');
-end;
-
 var
   Config: TConfigBanco;
+  Inicializador: TInicializadorSistema;
   Dono: TComponent;
   Conexao: TFDConnection;
   Composicao: TComposicaoSistema;
@@ -68,19 +68,27 @@ begin
   Application.Title := Tr('app.titulo');
   RegistrarInformacao('Pedido de Venda ' + VersaoDoExecutavel.Completa + ' iniciado');
 
+  // 1) config.ini e banco: cria ou ajusta o que faltar, perguntando quando for preciso.
+  Inicializador := TInicializadorSistema.Create(TIniConfigRepositorio.Create,
+    TInspetorBancoFireDAC.Create, TCriadorBancoFireDAC.Create, TRegistroBancoArquivo.Create,
+    TInteracaoVcl.Create);
+  try
+    if not Inicializador.Executar(Config) then
+      Exit;
+  finally
+    Inicializador.Free;
+  end;
+
   Dono := TComponent.Create(nil);
   try
     try
-      Config := TConfigLoader.Carregar;
       Conexao := TFabricaConexao.Criar(Config, Dono);
       Conexao.Connected := True;
     except
       on E: Exception do
       begin
-        begin
-          RegistrarLog('Falha ao iniciar', E);
-          Avisar(Tr('app.falha_iniciar') + sLineBreak + sLineBreak + MensagemSegura(E));
-        end;
+        RegistrarLog('Falha ao conectar depois da inicialização', E);
+        Avisar(Tr('app.falha_iniciar') + sLineBreak + sLineBreak + Tr('msg.falha_consulta'));
         Exit;
       end;
     end;

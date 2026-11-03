@@ -367,8 +367,8 @@
       Transparent = True
     end
     object lblVersao: TLabel
-      Left = 232
-      Top = 19
+      Left = 250
+      Top = 21
       Width = 36
       Height = 17
       Caption = 'v1.1.0'
