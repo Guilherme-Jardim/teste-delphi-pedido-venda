@@ -44,6 +44,10 @@ config.ini.example                modelo do arquivo de configuração
 
 O fluxo é **View → Controller → DAO**. A tela nunca fala com o banco, o controller não tem SQL e o DAO não tem regra de negócio. O total do pedido vive no Model (`TPedidoModel.ValorTotal`) e é recalculado a cada leitura, então não existe valor guardado que possa ficar velho depois de excluir ou editar um item.
 
+## Versão
+
+A versão atual aparece no título da janela, ao lado do nome na tela principal, nas propriedades do `.exe` e no log. Ela segue [versionamento semântico](https://semver.org/lang/pt-BR/) e é definida uma vez, nas opções do projeto (*Versão do aplicativo*). O histórico de mudanças está no [CHANGELOG](CHANGELOG.md) e cada entrega vira uma *tag* e uma *release* no GitHub.
+
 ## Requisitos
 
 - Delphi com FireDAC (testado no Delphi 13 Community Edition). O DUnitX já vem com o Delphi.
@@ -84,7 +88,7 @@ ClientLibrary=bin\Win32\fbclient.dll
 
 ## 3. Compilar e executar
 
-1. Abra `PedidoVenda.groupproj` no Delphi (ele reúne o pacote de componentes e o aplicativo).
+1. Abra `pedidoVendaProjectGroup.groupproj` no Delphi (ele reúne o pacote de componentes e o aplicativo).
 2. Compile o pacote **Componentes.Pedido** e instale-o (clique direito no projeto → *Install*). Assim os componentes aparecem na paleta, na página "Pedido", e o formulário abre no designer.
 3. Compile e execute o projeto **PedidoVenda** (Windows 32 bits).
 
