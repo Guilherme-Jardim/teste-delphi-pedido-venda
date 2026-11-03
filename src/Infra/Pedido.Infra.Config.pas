@@ -31,7 +31,8 @@ implementation
 
 uses
   System.IniFiles,
-  System.IOUtils;
+  System.IOUtils,
+  Pedido.Infra.Idioma;
 
 const
   NOME_ARQUIVO = 'config.ini';
@@ -79,9 +80,7 @@ begin
     Arquivo := LocalizarArquivo;
 
   if not TFile.Exists(Arquivo) then
-    raise EConfigInvalida.CreateFmt(
-      'Arquivo %s não encontrado. Copie o config.ini.example para config.ini ' +
-      'na raiz do projeto e ajuste os dados.', [NOME_ARQUIVO]);
+    raise EConfigInvalida.Create(Tr('cfg.nao_encontrado'));
 
   Ini := TIniFile.Create(Arquivo);
   try
@@ -96,16 +95,18 @@ begin
   end;
 
   if Result.Database = '' then
-    raise EConfigInvalida.Create('Informe o campo Database no config.ini.');
+    raise EConfigInvalida.Create(Tr('cfg.sem_database'));
   if Result.Username = '' then
-    raise EConfigInvalida.Create('Informe o campo Username no config.ini.');
+    raise EConfigInvalida.Create(Tr('cfg.sem_username'));
   if Result.ClientLibrary = '' then
-    raise EConfigInvalida.Create('Informe o campo ClientLibrary (fbclient.dll) no config.ini.');
+    raise EConfigInvalida.Create(Tr('cfg.sem_fbclient'));
+  if (Result.Port < 1) or (Result.Port > 65535) then
+    raise EConfigInvalida.Create(Tr('cfg.porta_invalida'));
 
   // Caminhos relativos valem a partir da pasta do config.ini.
   Result.ClientLibrary := ResolverCaminho(ExtractFilePath(Arquivo), Result.ClientLibrary);
   if not TFile.Exists(Result.ClientLibrary) then
-    raise EConfigInvalida.CreateFmt('fbclient.dll não encontrada em: %s', [Result.ClientLibrary]);
+    raise EConfigInvalida.Create(Tr('cfg.fbclient_inexistente', [Result.ClientLibrary]));
 end;
 
 end.
