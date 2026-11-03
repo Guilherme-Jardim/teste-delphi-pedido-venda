@@ -4,6 +4,17 @@ Tela de Pedido de Venda feita em Delphi (VCL), com persistência em Firebird via
 
 Na primeira vez que abre, o próprio executável configura a conexão e **cria o banco de dados**. Quem prefere pode criar o banco à mão com o `db.sql`: os dois caminhos funcionam e dão no mesmo banco.
 
+## Duas versões do projeto
+
+O teste pede organização em camadas (exemplo: MVC/Service/Repository). Por isso este repositório tem duas versões, as duas completas, testadas e com as mesmas funcionalidades:
+
+| Versão | Onde está | Organização |
+|---|---|---|
+| **Principal (esta, `main`)** | branch `main`, tag `v2.0.0` | `Model`, `DAO`, `Controller` e `View`, com interfaces e injeção de dependências. É o que o teste pede, sem camadas a mais. |
+| **Avançada** | branch [`clean-ddd`](https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/tree/clean-ddd), tag `v1.3.0` | Clean Architecture e DDD: `Domain`, `Application`, `Infrastructure` e `Presentation`, com agregado, objetos de valor e eventos de domínio. É a mesma tela e o mesmo banco, com a lógica distribuída em mais camadas. |
+
+Para abrir a versão avançada: `git checkout clean-ddd` (ou baixe a tag `v1.3.0`) e siga o README daquela versão.
+
 ## O que o sistema faz
 
 **Pedido de venda (requisitos do teste)**
@@ -24,6 +35,8 @@ Na primeira vez que abre, o próprio executável configura a conexão e **cria o
 - Português e espanhol, com a escolha lembrada na próxima abertura.
 - Componentes visuais próprios, em um pacote separado, e interface toda no `.dfm`.
 - Atalhos de teclado, dicas nos campos e botões, contraste conferido.
+- Avisos e confirmações no mesmo visual das telas e leitura por leitores de tela (MSAA e UI Automation).
+- Executável também em 64 bits.
 - Versão do aplicativo no executável, na tela e no log.
 
 ## Estrutura do projeto
@@ -154,7 +167,7 @@ A decisão "nunca foi criado" ou "já existiu" vem de um registro local em `%LOC
 
 1. Abra `pedidoVendaProjectGroup.groupproj` no Delphi (aplicativo, pacote de componentes e testes).
 2. Compile o pacote **Componentes.Pedido** e instale-o (clique direito no projeto → *Install*). Assim os componentes aparecem na paleta, na página "Pedido", e os formulários abrem no designer.
-3. Compile e execute o projeto **PedidoVenda** (Windows 32 bits).
+3. Compile e execute o projeto **PedidoVenda** (Windows 32 bits por padrão; para 64 bits, escolha a plataforma *Windows 64-bit* e use o `fbclient.dll` de `bin/Win64` no `config.ini`).
 
 O programa procura o `config.ini` subindo pastas a partir do executável, então funciona rodando de qualquer subpasta do projeto.
 
@@ -178,10 +191,11 @@ As bandeiras no topo (Brasil à esquerda, Espanha à direita) trocam todo o text
 
 - Tudo funciona só com o teclado, com ordem de Tab lógica e anel de foco visível em botões e campos.
 - Dica (hint) em todo campo e botão, incluindo o atalho correspondente.
+- **Leitores de tela (NVDA, JAWS e Narrator):** os componentes desenhados à mão respondem ao MSAA e ao UI Automation (`ComponentAccess`). Botões aparecem como botão, campos de texto como campo, com o rótulo como nome, o valor e a dica; a grade é lida como lista com a linha atual ("Linha 2 de 3; Cód. produto 1; ..."); os avisos são anunciados assim que aparecem; a bandeira do idioma em uso aparece como marcada.
 - Botões só com ícone usam o próprio `Caption` como nome para leitores de tela (propriedade `SomenteIcone`).
 - Contraste conferido: texto e botões passam de 4,5:1 sobre o fundo (WCAG AA).
 - Erros aparecem em uma faixa com ícone, cor e texto (nunca só cor) e não bloqueiam a digitação.
-- Confirmações e avisos usam diálogos do Windows com botões no idioma escolhido.
+- Confirmações, avisos e as janelas de inicialização têm o mesmo visual do sistema (cartão, ícone e botões arredondados), com Enter no botão principal, Esc para fechar e o foco devolvido ao campo de onde a pessoa veio. Só o seletor de pasta usa a janela do Windows.
 
 ## Segurança
 

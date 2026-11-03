@@ -7,6 +7,20 @@ A versão do aplicativo é definida uma vez, nas opções do projeto (Versão do
 
 ## [Não lançado]
 
+## [2.0.0] - 2026-11-03
+
+Versão principal com `Model`, `DAO` e `Controller`, e a versão com Clean Architecture e DDD passa para a branch `clean-ddd`.
+
+### Adicionado
+- Janela de aviso, confirmação e escolha no visual do sistema, no lugar das caixas do Windows (confirmar exclusão e cancelamento, avisos e perguntas da inicialização).
+- Suporte a leitores de tela nos componentes próprios (MSAA e UI Automation): botões, campos, grupos, lista de itens e avisos com nome, papel, valor e estado corretos.
+- A grade de itens informa a linha atual ao ser navegada.
+- Plataforma Windows 64 bits habilitada no projeto, com as informações de versão também no executável de 64 bits.
+- README com as duas versões do projeto.
+
+### Alterado
+- Depois de fechar uma janela, o foco volta para o controle de onde a pessoa veio.
+
 ## [1.1.0] - 2026-11-03
 
 Inicialização automática, SOLID e segurança.
