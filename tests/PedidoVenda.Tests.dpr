@@ -9,6 +9,7 @@ uses
   DUnitX.TestFramework,
   Pedido.Infra.Idioma in '..\src\Infra\Pedido.Infra.Idioma.pas',
   Pedido.Infra.Log in '..\src\Infra\Pedido.Infra.Log.pas',
+  Pedido.Infra.Versao in '..\src\Infra\Pedido.Infra.Versao.pas',
   Pedido.Infra.Config in '..\src\Infra\Pedido.Infra.Config.pas',
   Pedido.Infra.Conexao in '..\src\Infra\Pedido.Infra.Conexao.pas',
   Pedido.Model.Excecoes in '..\src\Model\Pedido.Model.Excecoes.pas',
@@ -26,6 +27,7 @@ uses
   Pedido.Tests.Totalizacao in 'Pedido.Tests.Totalizacao.pas',
   Pedido.Tests.ValidacaoItem in 'Pedido.Tests.ValidacaoItem.pas',
   Pedido.Tests.Idioma in 'Pedido.Tests.Idioma.pas',
+  Pedido.Tests.Versao in 'Pedido.Tests.Versao.pas',
   Pedido.Tests.Controller in 'Pedido.Tests.Controller.pas',
   Pedido.Tests.Integracao in 'Pedido.Tests.Integracao.pas';
 
