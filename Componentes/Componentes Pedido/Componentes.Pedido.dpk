@@ -37,6 +37,7 @@ contains
   ComponentTheme in 'Core\ComponentTheme.pas',
   ComponentIcons in 'Core\ComponentIcons.pas',
   ComponentUtils in 'Core\ComponentUtils.pas',
+  ComponentAccess in 'Core\ComponentAccess.pas',
   RoundButton in 'Buttons\RoundButton.pas',
   FlagButton in 'Buttons\FlagButton.pas',
   InfoCard in 'Cards\InfoCard.pas',
