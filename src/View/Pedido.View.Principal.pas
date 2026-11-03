@@ -18,9 +18,7 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
-  Pedido.Controller.Cliente,
-  Pedido.Controller.Pedido,
-  Pedido.Controller.Produto,
+  Pedido.Controller.Interfaces,
   Pedido.Infra.Idioma,
   Pedido.Model.Pedido,
   ComponentIcons,
@@ -84,9 +82,9 @@ type
     procedure btnGravarClick(Sender: TObject);
     procedure btnSairClick(Sender: TObject);
   private
-    FPedidoController: TPedidoController;
-    FClienteController: TClienteController;
-    FProdutoController: TProdutoController;
+    FPedidoController: IPedidoController;
+    FClienteController: IClienteController;
+    FProdutoController: IProdutoController;
     FPedido: TPedidoModel;
     FIndiceEmEdicao: Integer;
 
@@ -107,9 +105,9 @@ type
     function LerCodigo(ACampo: TModernEdit; out ACodigo: Integer): Boolean;
     function PedirNumeroPedido(const ATitulo: string; out ANumero: Integer): Boolean;
   public
-    // Os controllers pertencem a quem os criou (o .dpr).
-    procedure Iniciar(APedidoController: TPedidoController;
-      AClienteController: TClienteController; AProdutoController: TProdutoController);
+    // Recebe as dependências por interface (montadas na raiz de composição).
+    procedure Iniciar(const APedidoController: IPedidoController;
+      const AClienteController: IClienteController; const AProdutoController: IProdutoController);
   end;
 
 var
@@ -156,8 +154,8 @@ begin
   FPedido.Free;
 end;
 
-procedure TfrmPedidoVenda.Iniciar(APedidoController: TPedidoController;
-  AClienteController: TClienteController; AProdutoController: TProdutoController);
+procedure TfrmPedidoVenda.Iniciar(const APedidoController: IPedidoController;
+  const AClienteController: IClienteController; const AProdutoController: IProdutoController);
 begin
   FPedidoController := APedidoController;
   FClienteController := AClienteController;

@@ -20,9 +20,12 @@ uses
   Pedido.DAO.Cliente in 'DAO\Pedido.DAO.Cliente.pas',
   Pedido.DAO.Produto in 'DAO\Pedido.DAO.Produto.pas',
   Pedido.DAO.Pedido in 'DAO\Pedido.DAO.Pedido.pas',
+  Pedido.DAO.Interfaces in 'DAO\Pedido.DAO.Interfaces.pas',
+  Pedido.Controller.Interfaces in 'Controller\Pedido.Controller.Interfaces.pas',
   Pedido.Controller.Cliente in 'Controller\Pedido.Controller.Cliente.pas',
   Pedido.Controller.Produto in 'Controller\Pedido.Controller.Produto.pas',
   Pedido.Controller.Pedido in 'Controller\Pedido.Controller.Pedido.pas',
+  Pedido.Infra.Composicao in 'Infra\Pedido.Infra.Composicao.pas',
   ComponentTheme in '..\Componentes\Componentes Pedido\Core\ComponentTheme.pas',
   ComponentIcons in '..\Componentes\Componentes Pedido\Core\ComponentIcons.pas',
   ComponentUtils in '..\Componentes\Componentes Pedido\Core\ComponentUtils.pas',
@@ -56,9 +59,7 @@ var
   Config: TConfigBanco;
   Dono: TComponent;
   Conexao: TFDConnection;
-  PedidoController: TPedidoController;
-  ClienteController: TClienteController;
-  ProdutoController: TProdutoController;
+  Composicao: TComposicaoSistema;
 begin
   ReportMemoryLeaksOnShutdown := True;
   Application.Initialize;
@@ -84,17 +85,13 @@ begin
       end;
     end;
 
-    PedidoController := TPedidoController.Create(Conexao);
-    ClienteController := TClienteController.Create(Conexao);
-    ProdutoController := TProdutoController.Create(Conexao);
+    Composicao := TComposicaoSistema.Create(Conexao);
     try
       Application.CreateForm(TfrmPedidoVenda, frmPedidoVenda);
-      frmPedidoVenda.Iniciar(PedidoController, ClienteController, ProdutoController);
+      frmPedidoVenda.Iniciar(Composicao.Pedidos, Composicao.Clientes, Composicao.Produtos);
       Application.Run;
     finally
-      ProdutoController.Free;
-      ClienteController.Free;
-      PedidoController.Free;
+      Composicao.Free;
     end;
   finally
     Dono.Free;
