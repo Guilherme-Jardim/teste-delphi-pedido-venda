@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{33B30FAD-BA38-451F-8731-3991183D35F1}</ProjectGuid>
+        <ProjectGuid>{C7863353-1AFB-4635-9383-7FEB4B3C9599}</ProjectGuid>
         <MainSource>PedidoVenda.Tests.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
@@ -131,10 +131,10 @@
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>PedidoVenda.Tests_Icon1.ico</Icon_MainIcon>
+        <Icon_MainIcon>PedidoVenda.Tests_Icon3.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <Icon_MainIcon>PedidoVenda.Tests_Icon1.ico</Icon_MainIcon>
+        <Icon_MainIcon>PedidoVenda.Tests_Icon3.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
@@ -155,6 +155,7 @@
         </DelphiCompile>
         <DCCReference Include="..\src\Infra\Pedido.Infra.Idioma.pas"/>
         <DCCReference Include="..\src\Infra\Pedido.Infra.Log.pas"/>
+        <DCCReference Include="..\src\Infra\Pedido.Infra.Versao.pas"/>
         <DCCReference Include="..\src\Infra\Pedido.Infra.Config.pas"/>
         <DCCReference Include="..\src\Infra\Pedido.Infra.Conexao.pas"/>
         <DCCReference Include="..\src\Model\Pedido.Model.Excecoes.pas"/>
@@ -166,12 +167,17 @@
         <DCCReference Include="..\src\DAO\Pedido.DAO.Cliente.pas"/>
         <DCCReference Include="..\src\DAO\Pedido.DAO.Produto.pas"/>
         <DCCReference Include="..\src\DAO\Pedido.DAO.Pedido.pas"/>
+        <DCCReference Include="..\src\DAO\Pedido.DAO.Interfaces.pas"/>
+        <DCCReference Include="..\src\Controller\Pedido.Controller.Interfaces.pas"/>
         <DCCReference Include="..\src\Controller\Pedido.Controller.Cliente.pas"/>
         <DCCReference Include="..\src\Controller\Pedido.Controller.Produto.pas"/>
         <DCCReference Include="..\src\Controller\Pedido.Controller.Pedido.pas"/>
+        <DCCReference Include="..\src\Infra\Pedido.Infra.Composicao.pas"/>
+        <DCCReference Include="Pedido.Tests.Falsos.pas"/>
         <DCCReference Include="Pedido.Tests.Totalizacao.pas"/>
         <DCCReference Include="Pedido.Tests.ValidacaoItem.pas"/>
         <DCCReference Include="Pedido.Tests.Idioma.pas"/>
+        <DCCReference Include="Pedido.Tests.Versao.pas"/>
         <DCCReference Include="Pedido.Tests.Controller.pas"/>
         <DCCReference Include="Pedido.Tests.Integracao.pas"/>
         <BuildConfiguration Include="Base">

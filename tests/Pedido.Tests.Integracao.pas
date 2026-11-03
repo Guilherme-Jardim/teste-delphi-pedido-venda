@@ -11,9 +11,8 @@ uses
   System.SysUtils,
   DUnitX.TestFramework,
   FireDAC.Comp.Client,
-  Pedido.Controller.Cliente,
-  Pedido.Controller.Pedido,
-  Pedido.Controller.Produto;
+  Pedido.Controller.Interfaces,
+  Pedido.Infra.Composicao;
 
 type
   [TestFixture]
@@ -21,9 +20,10 @@ type
   private
     FDono: TComponent;
     FConexao: TFDConnection;
-    FPedidos: TPedidoController;
-    FClientes: TClienteController;
-    FProdutos: TProdutoController;
+    FComposicao: TComposicaoSistema;
+    FPedidos: IPedidoController;
+    FClientes: IClienteController;
+    FProdutos: IProdutoController;
     FSemBanco: Boolean;
     function ContarPedidos: Integer;
     procedure ExigirBanco;
@@ -91,16 +91,18 @@ begin
       Exit;
     end;
   end;
-  FPedidos := TPedidoController.Create(FConexao);
-  FClientes := TClienteController.Create(FConexao);
-  FProdutos := TProdutoController.Create(FConexao);
+  FComposicao := TComposicaoSistema.Create(FConexao);
+  FPedidos := FComposicao.Pedidos;
+  FClientes := FComposicao.Clientes;
+  FProdutos := FComposicao.Produtos;
 end;
 
 procedure TTestesIntegracao.TearDownFixture;
 begin
-  FProdutos.Free;
-  FClientes.Free;
-  FPedidos.Free;
+  FProdutos := nil;
+  FClientes := nil;
+  FPedidos := nil;
+  FComposicao.Free;
   FDono.Free;
 end;
 
