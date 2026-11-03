@@ -7,6 +7,22 @@ A versão do aplicativo é definida uma vez, nas opções do projeto (Versão do
 
 ## [Não lançado]
 
+## [1.2.0] - 2026-11-03
+
+Clean Architecture e DDD.
+
+### Alterado
+- O código foi reorganizado em quatro camadas: `Domain`, `Application`, `Infrastructure` e `Presentation`, com as dependências apontando para dentro.
+- `Model`, `Controller` e `DAO` deram lugar a entidades e agregado no domínio, casos de uso na aplicação e repositórios FireDAC na infraestrutura.
+- Os erros de negócio passam a ter um código (`EDominioErro`) e a tela os traduz para o idioma escolhido.
+
+### Adicionado
+- Objetos de valor `TQuantidade` e `TDinheiro`, imutáveis e sempre válidos.
+- `TPedido` como raiz de agregado, com regras de gravação e da observação dentro dele.
+- Interfaces dos repositórios no domínio e um caso de uso para cada ação (consultar cliente, consultar produto, criar item, gravar, carregar e cancelar).
+- Eventos de domínio `PedidoGravado` e `PedidoCancelado`, com publicador em memória e assinante que registra no log.
+- 40 testes novos (259 no total): domínio, eventos e casos de uso.
+
 ## [1.1.0] - 2026-11-03
 
 Inicialização automática, SOLID e segurança.

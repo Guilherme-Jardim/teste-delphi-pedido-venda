@@ -1,4 +1,4 @@
-﻿unit Pedido.View.ConfiguracaoBanco;
+﻿unit Pedido.Presentation.ConfiguracaoBanco;
 
 { Tela de configuração da conexão com o Firebird. Usada na primeira execução
   e sempre que o config.ini precisa ser ajustado. Todo o visual está no .dfm. }

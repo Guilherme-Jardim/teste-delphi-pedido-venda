@@ -30,14 +30,17 @@ type
     procedure MensagensDeErroDeNegocioSeguemOIdioma;
     [Test]
     procedure TodasAsTelasTemTextoNosDoisIdiomas;
+    [Test]
+    procedure TodoCodigoDeErroTemTextoNosDoisIdiomas;
   end;
 
 implementation
 
 uses
   System.SysUtils,
+  Pedido.Domain.Erros,
   Pedido.Infra.Idioma,
-  Pedido.Model.Excecoes;
+  Pedido.Presentation.TradutorErros;
 
 procedure TTestesIdioma.Setup;
 begin
@@ -86,21 +89,36 @@ end;
 
 procedure TTestesIdioma.MensagensDeErroDeNegocioSeguemOIdioma;
 var
-  Erro: EClienteNaoEncontrado;
+  Erro: EDominioErro;
 begin
-  Erro := EClienteNaoEncontrado.Create(99);
+  Erro := EDominioErro.Create(ceClienteNaoEncontrado, 99);
   try
-    Assert.Contains(Erro.Message, 'No encontramos al cliente 99');
+    Assert.Contains(MensagemDoErro(Erro), 'No encontramos al cliente 99');
+    DefinirIdioma(idPortugues, False);
+    Assert.Contains(MensagemDoErro(Erro), 'Não encontramos o cliente 99');
   finally
     Erro.Free;
   end;
+end;
 
-  DefinirIdioma(idPortugues, False);
-  Erro := EClienteNaoEncontrado.Create(99);
-  try
-    Assert.Contains(Erro.Message, 'Não encontramos o cliente 99');
-  finally
-    Erro.Free;
+procedure TTestesIdioma.TodoCodigoDeErroTemTextoNosDoisIdiomas;
+var
+  Codigo: TCodigoErro;
+  Erro: EDominioErro;
+begin
+  for Codigo := Low(TCodigoErro) to High(TCodigoErro) do
+  begin
+    Erro := EDominioErro.Create(Codigo, 1);
+    try
+      DefinirIdioma(idEspanhol, False);
+      Assert.AreNotEqual(ChaveDoErro(Codigo), MensagemDoErro(Erro),
+        'Sem texto em espanhol para ' + NomeDoCodigo(Codigo));
+      DefinirIdioma(idPortugues, False);
+      Assert.AreNotEqual(ChaveDoErro(Codigo), MensagemDoErro(Erro),
+        'Sem texto em português para ' + NomeDoCodigo(Codigo));
+    finally
+      Erro.Free;
+    end;
   end;
 end;
 

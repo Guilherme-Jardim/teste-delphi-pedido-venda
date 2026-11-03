@@ -32,7 +32,7 @@ type
   end;
 
 const
-  TEXTOS: array[0..148] of TTexto = (
+  TEXTOS: array[0..149] of TTexto = (
     // Tela principal
     (Chave: 'app.titulo'; Es: 'Pedido de Venta'; Pt: 'Pedido de Venda'),
     (Chave: 'app.subtitulo'; Es: 'Indica el cliente, agrega los ítems y guarda el pedido';
@@ -139,6 +139,8 @@ const
     (Chave: 'msg.vlr_limite'; Es: 'El valor unitario es demasiado grande (máximo 9.999.999,99).';
       Pt: 'O valor unitário é grande demais (máximo 9.999.999,99).'),
     (Chave: 'msg.produto_codigo'; Es: 'Indica el código del producto.'; Pt: 'Informe o código do produto.'),
+    (Chave: 'msg.obs_longa'; Es: 'La observación puede tener hasta %d caracteres.';
+      Pt: 'A observação pode ter até %d caracteres.'),
     (Chave: 'msg.falha_gravar'; Es: 'No pudimos guardar el pedido. Tus datos siguen en pantalla; inténtalo de nuevo.';
       Pt: 'Não conseguimos gravar o pedido. Seus dados continuam na tela; tente de novo.'),
     (Chave: 'msg.falha_cancelar'; Es: 'No pudimos cancelar el pedido. Inténtalo de nuevo en un momento.';

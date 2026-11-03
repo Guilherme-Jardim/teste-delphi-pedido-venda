@@ -1,4 +1,4 @@
-﻿unit Pedido.View.NumeroPedido;
+﻿unit Pedido.Presentation.NumeroPedido;
 
 { Pergunta o número de um pedido (usada por "Cargar pedido" e "Cancelar pedido"). }
 

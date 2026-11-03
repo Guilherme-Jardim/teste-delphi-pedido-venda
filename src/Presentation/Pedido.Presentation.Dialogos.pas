@@ -1,4 +1,4 @@
-﻿unit Pedido.View.Dialogos;
+﻿unit Pedido.Presentation.Dialogos;
 
 { Diálogos padronizados do sistema (confirmação sim/não) com os botões no
   idioma escolhido, em vez dos textos do Windows. }
