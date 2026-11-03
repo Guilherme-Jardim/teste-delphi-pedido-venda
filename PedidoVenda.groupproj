@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{FCEE7BCA-11EC-4499-B7E7-99D0B98C88A5}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Componentes\Componentes Pedido\Componentes.Pedido.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="src\PedidoVenda.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="tests\PedidoVenda.Tests.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Componentes_Pedido">
+        <MSBuild Projects="Componentes\Componentes Pedido\Componentes.Pedido.dproj"/>
+    </Target>
+    <Target Name="Componentes_Pedido:Clean">
+        <MSBuild Projects="Componentes\Componentes Pedido\Componentes.Pedido.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Componentes_Pedido:Make">
+        <MSBuild Projects="Componentes\Componentes Pedido\Componentes.Pedido.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="PedidoVenda">
+        <MSBuild Projects="src\PedidoVenda.dproj"/>
+    </Target>
+    <Target Name="PedidoVenda:Clean">
+        <MSBuild Projects="src\PedidoVenda.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PedidoVenda:Make">
+        <MSBuild Projects="src\PedidoVenda.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="PedidoVenda_Tests">
+        <MSBuild Projects="tests\PedidoVenda.Tests.dproj"/>
+    </Target>
+    <Target Name="PedidoVenda_Tests:Clean">
+        <MSBuild Projects="tests\PedidoVenda.Tests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PedidoVenda_Tests:Make">
+        <MSBuild Projects="tests\PedidoVenda.Tests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Componentes_Pedido;PedidoVenda;PedidoVenda_Tests"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Componentes_Pedido:Clean;PedidoVenda:Clean;PedidoVenda_Tests:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Componentes_Pedido:Make;PedidoVenda:Make;PedidoVenda_Tests:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
