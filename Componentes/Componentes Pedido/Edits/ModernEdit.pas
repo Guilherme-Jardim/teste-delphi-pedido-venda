@@ -17,15 +17,26 @@ uses
   Vcl.Forms,
   Vcl.StdCtrls,
   Vcl.Grids,
+  ComponentAccess,
   ComponentIcons,
   ComponentTheme,
   ComponentUtils;
 
 type
+  { Campo de texto interno: continua sendo um EDIT do Windows (o leitor de tela
+    lê o texto, o cursor e a seleção), só ganha o nome que vem do rótulo. }
+  TCampoModerno = class(TEdit)
+  private
+    FNomeAcessivel: string;
+    procedure WMGetObject(var Msg: TMessage); message WM_GETOBJECT;
+  public
+    property NomeAcessivel: string read FNomeAcessivel write FNomeAcessivel;
+  end;
+
   { TModernEdit }
   TModernEdit = class(TCustomControl)
   private
-    FEdit: TEdit;
+    FEdit: TCampoModerno;
     FRotulo: string;
     FIcone: TIcone;
     FFocado: Boolean;
@@ -43,6 +54,7 @@ type
     procedure EditExit(Sender: TObject);
     procedure EditKeyPress(Sender: TObject; var Key: Char);
     procedure PosicionarEdit;
+    procedure AtualizarNomeAcessivel;
     procedure WMEraseBkgnd(var Msg: TWMEraseBkgnd); message WM_ERASEBKGND;
   protected
     procedure Paint; override;
@@ -55,7 +67,7 @@ type
     // Disparado ao sair do campo.
   published
     // Campo de texto interno: permite ajustar MaxLength, NumbersOnly etc. no dfm.
-    property Edit: TEdit read FEdit;
+    property Edit: TCampoModerno read FEdit;
     property Rotulo: string read FRotulo write SetRotulo;
     // Texto de ajuda mostrado como dica (hint) ao parar o mouse sobre o campo.
     property Dica: string read FDica write SetDica;
@@ -81,6 +93,28 @@ begin
   RegisterComponents('Pedido', [TModernEdit]);
 end;
 
+{ TCampoModerno }
+
+procedure TCampoModerno.WMGetObject(var Msg: TMessage);
+begin
+  if not ResponderGetObject(Self, Msg,
+    function: TDadosAcessiveis
+    begin
+      Result := NovosDados(FNomeAcessivel);
+      Result.Descricao := Hint;
+      Result.Valor := Text;
+      Result.Campo := True;
+      Result.SomenteLeitura := ReadOnly;
+    end,
+    nil,
+    procedure(const AValor: string)
+    begin
+      if not ReadOnly then
+        Text := AValor;
+    end) then
+    inherited;
+end;
+
 const
   ALTURA_ROTULO = 22;
   ALTURA_CAIXA = 38;
@@ -93,7 +127,7 @@ begin
   Width := 200;
   Height := ALTURA_ROTULO + ALTURA_CAIXA;
 
-  FEdit := TEdit.Create(Self);
+  FEdit := TCampoModerno.Create(Self);
   FEdit.Parent := Self;
   FEdit.SetSubComponent(True);
   FEdit.BorderStyle := bsNone;
@@ -133,15 +167,25 @@ begin
   Invalidate;
 end;
 
+procedure TModernEdit.AtualizarNomeAcessivel;
+begin
+  if FRotulo <> '' then
+    FEdit.NomeAcessivel := FRotulo
+  else
+    FEdit.NomeAcessivel := FDica;
+end;
+
 procedure TModernEdit.SetRotulo(const AValue: string);
 begin
   FRotulo := AValue;
+  AtualizarNomeAcessivel;
   Invalidate;
 end;
 
 procedure TModernEdit.SetDica(const AValue: string);
 begin
   FDica := AValue;
+  AtualizarNomeAcessivel;
   Hint := AValue;
   ShowHint := AValue <> '';
   FEdit.Hint := AValue;

@@ -34,6 +34,7 @@ uses
   Pedido.Infra.Persistencia.Pedido in 'Infrastructure\Persistence\Pedido.Infra.Persistencia.Pedido.pas',
   Pedido.Infra.AssinanteLog in 'Infrastructure\Pedido.Infra.AssinanteLog.pas',
   Pedido.Infra.Composicao in 'Infrastructure\Pedido.Infra.Composicao.pas',
+  ComponentAccess in '..\Componentes\Componentes Pedido\Core\ComponentAccess.pas',
   ComponentTheme in '..\Componentes\Componentes Pedido\Core\ComponentTheme.pas',
   ComponentIcons in '..\Componentes\Componentes Pedido\Core\ComponentIcons.pas',
   ComponentUtils in '..\Componentes\Componentes Pedido\Core\ComponentUtils.pas',
@@ -44,6 +45,7 @@ uses
   AlertBar in '..\Componentes\Componentes Pedido\Alerts\AlertBar.pas',
   ModernGrid in '..\Componentes\Componentes Pedido\Grids\ModernGrid.pas',
   Pedido.Presentation.TradutorErros in 'Presentation\Pedido.Presentation.TradutorErros.pas',
+  Pedido.Presentation.DialogoModerno in 'Presentation\Pedido.Presentation.DialogoModerno.pas' {frmDialogoModerno},
   Pedido.Presentation.Dialogos in 'Presentation\Pedido.Presentation.Dialogos.pas',
   Pedido.Presentation.ConfiguracaoBanco in 'Presentation\Pedido.Presentation.ConfiguracaoBanco.pas' {frmConfiguracaoBanco},
   Pedido.Presentation.Inicializacao in 'Presentation\Pedido.Presentation.Inicializacao.pas',
@@ -54,7 +56,7 @@ uses
 
 procedure Avisar(const AMensagem: string);
 begin
-  Application.MessageBox(PChar(AMensagem), PChar(Tr('app.titulo')), MB_OK or MB_ICONERROR);
+  MostrarAviso(Tr('app.titulo'), AMensagem, icErro);
 end;
 
 var

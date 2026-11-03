@@ -178,7 +178,7 @@ A decisão "nunca foi criado" ou "já existiu" vem de um registro local em `%LOC
 
 1. Abra `pedidoVendaProjectGroup.groupproj` no Delphi (aplicativo, pacote de componentes e testes).
 2. Compile o pacote **Componentes.Pedido** e instale-o (clique direito no projeto → *Install*). Assim os componentes aparecem na paleta, na página "Pedido", e os formulários abrem no designer.
-3. Compile e execute o projeto **PedidoVenda** (Windows 32 bits).
+3. Compile e execute o projeto **PedidoVenda**. O padrão é Windows 32 bits; para 64 bits, escolha a plataforma *Windows 64-bit* e use o `fbclient.dll` de `bin/Win64` no `config.ini`.
 
 O programa procura o `config.ini` subindo pastas a partir do executável, então funciona rodando de qualquer subpasta do projeto.
 
@@ -202,10 +202,11 @@ As bandeiras no topo (Brasil à esquerda, Espanha à direita) trocam todo o text
 
 - Tudo funciona só com o teclado, com ordem de Tab lógica e anel de foco visível em botões e campos.
 - Dica (hint) em todo campo e botão, incluindo o atalho correspondente.
+- **Leitores de tela (NVDA, JAWS e Narrator):** os componentes desenhados à mão respondem ao MSAA e ao UI Automation (`ComponentAccess`). Botões aparecem como botão, campos de texto como campo, com o rótulo como nome, o valor e a dica; a grade é lida como lista com a linha atual ("Linha 2 de 3; Cód. produto 1; ..."); os avisos são anunciados assim que aparecem; a bandeira do idioma em uso aparece como marcada.
 - Botões só com ícone usam o próprio `Caption` como nome para leitores de tela (propriedade `SomenteIcone`).
 - Contraste conferido: texto e botões passam de 4,5:1 sobre o fundo (WCAG AA).
 - Erros aparecem em uma faixa com ícone, cor e texto (nunca só cor) e não bloqueiam a digitação.
-- Confirmações e avisos usam diálogos do Windows com botões no idioma escolhido.
+- Confirmações, avisos e as janelas de inicialização têm o mesmo visual do sistema (cartão, ícone e botões arredondados), com Enter no botão principal, Esc para fechar e o foco devolvido ao campo de onde a pessoa veio. Só o seletor de pasta usa a janela do Windows.
 
 ## Segurança
 
