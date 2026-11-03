@@ -1,6 +1,6 @@
 ﻿unit Pedido.View.Inicializacao;
 
-{ Janelas da inicialização: avisos com botões de ação (TTaskDialog) e a tela
+{ Janelas da inicialização: avisos com botões de ação (diálogo moderno) e a tela
   de configuração. É a implementação com VCL do contrato IInteracaoInicializacao;
   a lógica de decisão fica no TInicializadorSistema, que não sabe que existem janelas. }
 
@@ -24,14 +24,10 @@ implementation
 
 uses
   System.SysUtils,
-  System.UITypes,
-  Vcl.Dialogs,
+  ComponentIcons,
   Pedido.Infra.Idioma,
-  Pedido.View.ConfiguracaoBanco;
-
-const
-  // ModalResult de cada botão = BASE + ordem da ação.
-  BASE_RESULTADO = 100;
+  Pedido.View.ConfiguracaoBanco,
+  Pedido.View.Dialogos;
 
 function ChaveDoProblema(AProblema: TProblemaInicializacao): string;
 begin
@@ -97,52 +93,40 @@ function TInteracaoVcl.PerguntarAcao(AProblema: TProblemaInicializacao;
   const AConfig: TConfigBanco; const ADetalhe: string;
   const APermitidas: TAcoesUsuario): TAcaoUsuario;
 var
-  Dialogo: TTaskDialog;
-  Botao: TTaskDialogButtonItem;
+  Legendas: TArray<string>;
+  Acoes: TArray<TAcaoUsuario>;
   Acao: TAcaoUsuario;
-  Primeiro: Boolean;
+  Icone: TIcone;
+  Escolha: Integer;
 begin
-  Result := auSair;
-  Dialogo := TTaskDialog.Create(nil);
-  try
-    Dialogo.Caption := Tr('app.titulo');
-    Dialogo.Title := Tr(ChaveDoProblema(AProblema) + '.titulo');
-    Dialogo.Text := TextoDoProblema(AProblema, AConfig, ADetalhe);
-    Dialogo.CommonButtons := [];
-    Dialogo.Flags := [tfAllowDialogCancellation, tfUseCommandLinks];
-    if AProblema in [pbConfigInvalida, pbBancoSumiu, pbSemEstrutura] then
-      Dialogo.MainIcon := tdiWarning
-    else
-      Dialogo.MainIcon := tdiError;
-
-    Primeiro := True;
-    for Acao := Low(TAcaoUsuario) to High(TAcaoUsuario) do
-    begin
-      if not (Acao in APermitidas) then
-        Continue;
-      Botao := TTaskDialogButtonItem(Dialogo.Buttons.Add);
-      Botao.Caption := LegendaDaAcao(Acao);
-      Botao.ModalResult := BASE_RESULTADO + Ord(Acao);
-      Botao.Default := Primeiro;
-      Primeiro := False;
-    end;
-
-    if Dialogo.Execute then
-    begin
-      for Acao := Low(TAcaoUsuario) to High(TAcaoUsuario) do
-        if (Acao in APermitidas) and (Dialogo.ModalResult = BASE_RESULTADO + Ord(Acao)) then
-          Exit(Acao);
-    end;
-    // Janela fechada no X ou com Esc: equivale a sair.
-    Result := auSair;
-  finally
-    Dialogo.Free;
+  for Acao := Low(TAcaoUsuario) to High(TAcaoUsuario) do
+  begin
+    if not (Acao in APermitidas) then
+      Continue;
+    SetLength(Acoes, Length(Acoes) + 1);
+    Acoes[High(Acoes)] := Acao;
+    SetLength(Legendas, Length(Legendas) + 1);
+    Legendas[High(Legendas)] := LegendaDaAcao(Acao);
   end;
+
+  // Problemas que se resolvem criando algo são aviso; falhas técnicas são erro.
+  if AProblema in [pbConfigInvalida, pbBancoSumiu, pbSemEstrutura] then
+    Icone := icInfo
+  else
+    Icone := icErro;
+
+  Escolha := EscolherAcao(Tr(ChaveDoProblema(AProblema) + '.titulo'),
+    TextoDoProblema(AProblema, AConfig, ADetalhe), Icone, Legendas);
+
+  // Janela fechada no X ou com Esc: equivale a sair.
+  if (Escolha >= 0) and (Escolha < Length(Acoes)) then
+    Result := Acoes[Escolha]
+  else
+    Result := auSair;
 end;
 
 procedure TInteracaoVcl.Informar(AAviso: TAvisoInicializacao; const AConfig: TConfigBanco);
 var
-  Dialogo: TTaskDialog;
   Chave: string;
 begin
   case AAviso of
@@ -151,17 +135,7 @@ begin
   else
     Chave := 'aviso.estrutura_atualizada';
   end;
-  Dialogo := TTaskDialog.Create(nil);
-  try
-    Dialogo.Caption := Tr('app.titulo');
-    Dialogo.Title := Tr(Chave + '.titulo');
-    Dialogo.Text := Tr(Chave + '.msg', [AConfig.Database]);
-    Dialogo.MainIcon := tdiInformation;
-    Dialogo.CommonButtons := [tcbOk];
-    Dialogo.Execute;
-  finally
-    Dialogo.Free;
-  end;
+  MostrarAviso(Tr(Chave + '.titulo'), Tr(Chave + '.msg', [AConfig.Database]), icSucesso);
 end;
 
 end.

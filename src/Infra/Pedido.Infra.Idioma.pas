@@ -32,7 +32,7 @@ type
   end;
 
 const
-  TEXTOS: array[0..148] of TTexto = (
+  TEXTOS: array[0..150] of TTexto = (
     // Tela principal
     (Chave: 'app.titulo'; Es: 'Pedido de Venta'; Pt: 'Pedido de Venda'),
     (Chave: 'app.subtitulo'; Es: 'Indica el cliente, agrega los ítems y guarda el pedido';
@@ -149,6 +149,8 @@ const
       Pt: 'Algo deu errado. Tente de novo e, se continuar, avise o suporte.'),
 
     // Diálogos
+    (Chave: 'a11y.linha'; Es: 'Fila %d de %d'; Pt: 'Linha %d de %d'),
+    (Chave: 'dlg.confirmar_titulo'; Es: 'Confirmar'; Pt: 'Confirmar'),
     (Chave: 'dlg.sim'; Es: 'Sí'; Pt: 'Sim'),
     (Chave: 'dlg.nao'; Es: 'No'; Pt: 'Não'),
     (Chave: 'dlg.ok'; Es: 'Aceptar'; Pt: 'OK'),
