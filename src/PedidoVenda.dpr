@@ -32,6 +32,7 @@ uses
   Pedido.Controller.Produto in 'Controller\Pedido.Controller.Produto.pas',
   Pedido.Controller.Pedido in 'Controller\Pedido.Controller.Pedido.pas',
   Pedido.Infra.Composicao in 'Infra\Pedido.Infra.Composicao.pas',
+  ComponentAccess in '..\Componentes\Componentes Pedido\Core\ComponentAccess.pas',
   ComponentTheme in '..\Componentes\Componentes Pedido\Core\ComponentTheme.pas',
   ComponentIcons in '..\Componentes\Componentes Pedido\Core\ComponentIcons.pas',
   ComponentUtils in '..\Componentes\Componentes Pedido\Core\ComponentUtils.pas',
@@ -41,6 +42,7 @@ uses
   ModernEdit in '..\Componentes\Componentes Pedido\Edits\ModernEdit.pas',
   AlertBar in '..\Componentes\Componentes Pedido\Alerts\AlertBar.pas',
   ModernGrid in '..\Componentes\Componentes Pedido\Grids\ModernGrid.pas',
+  Pedido.View.DialogoModerno in 'View\Pedido.View.DialogoModerno.pas' {frmDialogoModerno},
   Pedido.View.Dialogos in 'View\Pedido.View.Dialogos.pas',
   Pedido.View.ConfiguracaoBanco in 'View\Pedido.View.ConfiguracaoBanco.pas' {frmConfiguracaoBanco},
   Pedido.View.Inicializacao in 'View\Pedido.View.Inicializacao.pas',
@@ -51,7 +53,7 @@ uses
 
 procedure Avisar(const AMensagem: string);
 begin
-  Application.MessageBox(PChar(AMensagem), PChar(Tr('app.titulo')), MB_OK or MB_ICONERROR);
+  MostrarAviso(Tr('app.titulo'), AMensagem, icErro);
 end;
 
 var
