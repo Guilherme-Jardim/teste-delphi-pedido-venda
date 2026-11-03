@@ -32,7 +32,7 @@ type
   end;
 
 const
-  TEXTOS: array[0..86] of TTexto = (
+  TEXTOS: array[0..148] of TTexto = (
     // Tela principal
     (Chave: 'app.titulo'; Es: 'Pedido de Venta'; Pt: 'Pedido de Venda'),
     (Chave: 'app.subtitulo'; Es: 'Indica el cliente, agrega los ítems y guarda el pedido';
@@ -171,7 +171,133 @@ const
     (Chave: 'cfg.fbclient_inexistente'; Es: 'No encontramos fbclient.dll en: %s';
       Pt: 'Não encontramos o fbclient.dll em: %s'),
     (Chave: 'cfg.porta_invalida'; Es: 'La Port del config.ini debe estar entre 1 y 65535.';
-      Pt: 'A Port do config.ini precisa estar entre 1 e 65535.')
+      Pt: 'A Port do config.ini precisa estar entre 1 e 65535.'),
+
+    // Validação, configuração e inicialização
+    (Chave: 'val.servidor_longo'; Es: 'El nombre del servidor es demasiado largo.';
+      Pt: 'O nome do servidor é longo demais.'),
+    (Chave: 'val.servidor_invalido'; Es: 'El servidor solo puede tener letras, números, punto, guion y dos puntos.';
+      Pt: 'O servidor só pode ter letras, números, ponto, hífen e dois-pontos.'),
+    (Chave: 'val.porta_invalida'; Es: 'La puerta debe ser un número entre 1 y 65535.';
+      Pt: 'A porta precisa ser um número entre 1 e 65535.'),
+    (Chave: 'val.banco_vazio'; Es: 'Indica la ruta del archivo de la base de datos.';
+      Pt: 'Informe o caminho do arquivo do banco de dados.'),
+    (Chave: 'val.banco_longo'; Es: 'La ruta de la base de datos es demasiado larga.';
+      Pt: 'O caminho do banco de dados é longo demais.'),
+    (Chave: 'val.banco_caracteres'; Es: 'La ruta de la base de datos tiene caracteres no permitidos (comillas, ; < > | * ? % o ..).';
+      Pt: 'O caminho do banco de dados tem caracteres não permitidos (aspas, ; < > | * ? % ou ..).'),
+    (Chave: 'val.banco_extensao'; Es: 'El archivo de la base de datos debe terminar en .fdb, .gdb o .fb.';
+      Pt: 'O arquivo do banco de dados precisa terminar em .fdb, .gdb ou .fb.'),
+    (Chave: 'val.usuario_invalido'; Es: 'El usuario debe tener hasta 31 caracteres (letras, números, _ $ . -).';
+      Pt: 'O usuário precisa ter até 31 caracteres (letras, números, _ $ . -).'),
+    (Chave: 'val.senha_invalida'; Es: 'La contraseña es demasiado larga o tiene caracteres de control.';
+      Pt: 'A senha é longa demais ou tem caracteres de controle.'),
+    (Chave: 'val.biblioteca_invalida'; Es: 'Indica la ruta de fbclient.dll (un archivo .dll sin comillas).';
+      Pt: 'Informe o caminho do fbclient.dll (um arquivo .dll, sem aspas).'),
+    (Chave: 'cfg.motivo_ilegivel'; Es: 'No se pudo leer el archivo.';
+      Pt: 'Não foi possível ler o arquivo.'),
+    (Chave: 'cfg.motivo_sem_secao'; Es: 'Falta la sección [Database].';
+      Pt: 'Falta a seção [Database].'),
+    (Chave: 'cfg.motivo_campo'; Es: '%s: %s';
+      Pt: '%s: %s'),
+    (Chave: 'cfg.motivo_campo_ausente'; Es: 'falta el campo';
+      Pt: 'falta o campo'),
+    (Chave: 'cfg.motivo_porta_texto'; Es: 'debe ser un número';
+      Pt: 'precisa ser um número'),
+    (Chave: 'cfgdlg.titulo_primeira'; Es: 'Vamos configurar la conexión';
+      Pt: 'Vamos configurar a conexão'),
+    (Chave: 'cfgdlg.titulo_reconfig'; Es: 'Ajustar la conexión';
+      Pt: 'Ajustar a conexão'),
+    (Chave: 'cfgdlg.ajuda_primeira'; Es: 'Es la primera vez que abres el sistema. Ya sugerimos los datos; solo revisa y escribe la contraseña del Firebird.';
+      Pt: 'É a primeira vez que o sistema abre. Já sugerimos os dados; é só conferir e digitar a senha do Firebird.'),
+    (Chave: 'cfgdlg.ajuda_reconfig'; Es: 'Revisa los datos de conexión con el Firebird. Guardamos una copia del archivo anterior.';
+      Pt: 'Confira os dados de conexão com o Firebird. Guardamos uma cópia do arquivo anterior.'),
+    (Chave: 'cfgdlg.servidor'; Es: 'Servidor';
+      Pt: 'Servidor'),
+    (Chave: 'cfgdlg.porta'; Es: 'Puerta';
+      Pt: 'Porta'),
+    (Chave: 'cfgdlg.banco'; Es: 'Archivo de la base de datos (.fdb)';
+      Pt: 'Arquivo do banco de dados (.fdb)'),
+    (Chave: 'cfgdlg.usuario'; Es: 'Usuario';
+      Pt: 'Usuário'),
+    (Chave: 'cfgdlg.senha'; Es: 'Contraseña';
+      Pt: 'Senha'),
+    (Chave: 'cfgdlg.biblioteca'; Es: 'Biblioteca del cliente (fbclient.dll)';
+      Pt: 'Biblioteca do cliente (fbclient.dll)'),
+    (Chave: 'cfgdlg.salvar'; Es: 'Guardar y continuar';
+      Pt: 'Salvar e continuar'),
+    (Chave: 'cfgdlg.sugestoes'; Es: 'Usar sugerencias';
+      Pt: 'Usar sugestões'),
+    (Chave: 'cfgdlg.hint_servidor'; Es: 'Deja vacío para conexión local sin servidor, o escribe localhost o la dirección del servidor';
+      Pt: 'Deixe vazio para conexão local sem servidor, ou informe localhost ou o endereço do servidor'),
+    (Chave: 'cfgdlg.hint_banco'; Es: 'Ruta del archivo en la máquina del servidor. Si no existe, el sistema lo crea';
+      Pt: 'Caminho do arquivo na máquina do servidor. Se não existir, o sistema cria'),
+    (Chave: 'cfgdlg.hint_senha'; Es: 'La contraseña no se muestra y solo se guarda en el config.ini';
+      Pt: 'A senha não é exibida e só é gravada no config.ini'),
+    (Chave: 'pb.config_invalida.titulo'; Es: 'El archivo de configuración no está correcto';
+      Pt: 'O arquivo de configuração não está correto'),
+    (Chave: 'pb.config_invalida.msg'; Es: 'No pude usar el config.ini (%s).' + sLineBreak + '' + sLineBreak + 'Puedo abrir la configuración para ajustarlo? Guardo una copia del archivo actual antes de cambiar.';
+      Pt: 'Não consegui usar o config.ini (%s).' + sLineBreak + '' + sLineBreak + 'Posso abrir a configuração para ajustar? Guardo uma cópia do arquivo atual antes de alterar.'),
+    (Chave: 'pb.banco_sumiu.titulo'; Es: 'No encontramos la base de datos';
+      Pt: 'Não encontramos o banco de dados'),
+    (Chave: 'pb.banco_sumiu.msg'; Es: 'La base de datos %s ya fue creada en este equipo, pero el archivo no está más ahí (¿lo borraron o lo movieron?).' + sLineBreak + '' + sLineBreak + 'Quieres crear una base nueva y vacía o prefieres ajustar la ruta?';
+      Pt: 'O banco de dados %s já foi criado neste computador, mas o arquivo não está mais lá (foi apagado ou movido?).' + sLineBreak + '' + sLineBreak + 'Quer criar um banco novo e vazio ou prefere ajustar o caminho?'),
+    (Chave: 'pb.sem_estrutura.titulo'; Es: 'La base de datos está vacía';
+      Pt: 'O banco de dados está vazio'),
+    (Chave: 'pb.sem_estrutura.msg'; Es: 'La base %s existe, pero no tiene las tablas del sistema.' + sLineBreak + '' + sLineBreak + 'Creo la estructura ahora? No se borra nada de lo que ya exista.';
+      Pt: 'O banco %s existe, mas não tem as tabelas do sistema.' + sLineBreak + '' + sLineBreak + 'Posso criar a estrutura agora? Nada do que já existe será apagado.'),
+    (Chave: 'pb.outro_sistema.titulo'; Es: 'Esta base de datos es de otro sistema';
+      Pt: 'Este banco de dados é de outro sistema'),
+    (Chave: 'pb.outro_sistema.msg'; Es: 'El archivo %s ya tiene tablas que no son de este sistema. Por seguridad no creo nada en él.' + sLineBreak + '' + sLineBreak + 'Elige otra ruta en la configuración.';
+      Pt: 'O arquivo %s já tem tabelas que não são deste sistema. Por segurança não crio nada nele.' + sLineBreak + '' + sLineBreak + 'Escolha outro caminho na configuração.'),
+    (Chave: 'pb.servidor.titulo'; Es: 'No pude comunicarme con el servidor Firebird';
+      Pt: 'Não consegui falar com o servidor Firebird'),
+    (Chave: 'pb.servidor.msg'; Es: 'Revisa si el Firebird está en ejecución en %s (puerta %d) y si la puerta está liberada.';
+      Pt: 'Confira se o Firebird está em execução em %s (porta %d) e se a porta está liberada.'),
+    (Chave: 'pb.credenciais.titulo'; Es: 'Usuario o contraseña de la base inválidos';
+      Pt: 'Usuário ou senha do banco inválidos'),
+    (Chave: 'pb.credenciais.msg'; Es: 'El Firebird rechazó el usuario %s. Revisa la contraseña en la configuración.';
+      Pt: 'O Firebird recusou o usuário %s. Confira a senha na configuração.'),
+    (Chave: 'pb.biblioteca.titulo'; Es: 'Biblioteca del Firebird no disponible';
+      Pt: 'Biblioteca do Firebird indisponível'),
+    (Chave: 'pb.biblioteca.msg'; Es: 'No pude cargar el fbclient.dll (%s).' + sLineBreak + '' + sLineBreak + 'Debe existir y tener los mismos bits del sistema (32 o 64).';
+      Pt: 'Não consegui carregar o fbclient.dll (%s).' + sLineBreak + '' + sLineBreak + 'Ele precisa existir e ter os mesmos bits do sistema (32 ou 64).'),
+    (Chave: 'pb.erro.titulo'; Es: 'No fue posible abrir la base de datos';
+      Pt: 'Não foi possível abrir o banco de dados'),
+    (Chave: 'pb.erro.msg'; Es: 'Ocurrió un error inesperado al acceder a la base %s. El detalle quedó guardado en el log.';
+      Pt: 'Aconteceu um erro inesperado ao acessar o banco %s. O detalhe ficou guardado no log.'),
+    (Chave: 'acao.reconfigurar'; Es: 'Ajustar configuración';
+      Pt: 'Ajustar configuração'),
+    (Chave: 'acao.tentar'; Es: 'Intentar de nuevo';
+      Pt: 'Tentar de novo'),
+    (Chave: 'acao.sair'; Es: 'Salir';
+      Pt: 'Sair'),
+    (Chave: 'acao.criar_novo'; Es: 'Crear base nueva';
+      Pt: 'Criar banco novo'),
+    (Chave: 'acao.criar_estrutura'; Es: 'Crear estructura';
+      Pt: 'Criar estrutura'),
+    (Chave: 'aviso.banco_criado.titulo'; Es: 'Base de datos creada';
+      Pt: 'Banco de dados criado'),
+    (Chave: 'aviso.banco_criado.msg'; Es: 'Creé la base %s con las tablas y los datos de ejemplo.';
+      Pt: 'Criei o banco %s com as tabelas e os dados de exemplo.'),
+    (Chave: 'aviso.estrutura_criada.titulo'; Es: 'Estructura creada';
+      Pt: 'Estrutura criada'),
+    (Chave: 'aviso.estrutura_criada.msg'; Es: 'Las tablas del sistema fueron creadas en %s.';
+      Pt: 'As tabelas do sistema foram criadas em %s.'),
+    (Chave: 'aviso.estrutura_atualizada.titulo'; Es: 'Base de datos actualizada';
+      Pt: 'Banco de dados atualizado'),
+    (Chave: 'aviso.estrutura_atualizada.msg'; Es: 'Actualicé la estructura de %s (campo Observación). No se perdió ningún dato.';
+      Pt: 'Atualizei a estrutura de %s (campo Observação). Nenhum dado foi perdido.'),
+    (Chave: 'cfgdlg.escolher_pasta'; Es: 'Elegir la carpeta de la base de datos';
+      Pt: 'Escolher a pasta do banco de dados'),
+    (Chave: 'cfgdlg.pasta_programa'; Es: 'Usar la carpeta del programa';
+      Pt: 'Usar a pasta do programa'),
+    (Chave: 'cfgdlg.pasta_padrao'; Es: 'Usar la carpeta estándar (ProgramData)';
+      Pt: 'Usar a pasta padrão (ProgramData)'),
+    (Chave: 'cfgdlg.titulo_pasta'; Es: 'Elige la carpeta donde quedará la base de datos';
+      Pt: 'Escolha a pasta onde o banco de dados vai ficar'),
+    (Chave: 'cfgdlg.hint_pasta_remota'; Es: 'Con un servidor en otra máquina, la carpeta es la de esa máquina; escribe la ruta en el campo';
+      Pt: 'Com servidor em outra máquina, a pasta é a dessa máquina; digite o caminho no campo')
   );
 
 var
