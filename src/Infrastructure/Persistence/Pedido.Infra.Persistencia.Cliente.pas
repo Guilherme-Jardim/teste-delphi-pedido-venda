@@ -1,17 +1,16 @@
-﻿unit Pedido.DAO.Cliente;
+﻿unit Pedido.Infra.Persistencia.Cliente;
 
 interface
 
 uses
-  Pedido.DAO.Base,
-  Pedido.DAO.Interfaces,
-  Pedido.Model.Cliente;
+  Pedido.Domain.Cliente,
+  Pedido.Domain.Repositorios,
+  Pedido.Infra.Persistencia.Base;
 
 type
-  TClienteDAO = class(TDAOBase, IClienteDAO)
+  TClienteRepositorioFireDAC = class(TRepositorioFireDACBase, IClienteRepository)
   public
-    // Devolve nil quando o cliente não existe. Quem chama é dono do objeto.
-    function GetCliente(ACodigo: Integer): TClienteModel;
+    function ObterPorCodigo(ACodigo: Integer): TCliente;
   end;
 
 implementation
@@ -25,7 +24,7 @@ const
   SQL_POR_CODIGO =
     'SELECT CODIGO, NOME, CIDADE, UF FROM CLIENTE WHERE CODIGO = :CODIGO';
 
-function TClienteDAO.GetCliente(ACodigo: Integer): TClienteModel;
+function TClienteRepositorioFireDAC.ObterPorCodigo(ACodigo: Integer): TCliente;
 var
   Query: TFDQuery;
 begin
@@ -35,7 +34,7 @@ begin
     Query.ParamByName('CODIGO').AsInteger := ACodigo;
     Query.Open;
     if not Query.IsEmpty then
-      Result := TClienteModel.Create(
+      Result := TCliente.Create(
         Query.FieldByName('CODIGO').AsInteger,
         Query.FieldByName('NOME').AsString,
         Query.FieldByName('CIDADE').AsString,

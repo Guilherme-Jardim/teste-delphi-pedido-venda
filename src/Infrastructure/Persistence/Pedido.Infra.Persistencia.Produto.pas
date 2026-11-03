@@ -1,17 +1,16 @@
-﻿unit Pedido.DAO.Produto;
+﻿unit Pedido.Infra.Persistencia.Produto;
 
 interface
 
 uses
-  Pedido.DAO.Base,
-  Pedido.DAO.Interfaces,
-  Pedido.Model.Produto;
+  Pedido.Domain.Produto,
+  Pedido.Domain.Repositorios,
+  Pedido.Infra.Persistencia.Base;
 
 type
-  TProdutoDAO = class(TDAOBase, IProdutoDAO)
+  TProdutoRepositorioFireDAC = class(TRepositorioFireDACBase, IProdutoRepository)
   public
-    // Devolve nil quando o produto não existe. Quem chama é dono do objeto.
-    function GetProduto(ACodigo: Integer): TProdutoModel;
+    function ObterPorCodigo(ACodigo: Integer): TProduto;
   end;
 
 implementation
@@ -19,13 +18,14 @@ implementation
 uses
   Data.DB,
   FireDAC.Stan.Param,
-  FireDAC.Comp.Client;
+  FireDAC.Comp.Client,
+  Pedido.Domain.ObjetosValor;
 
 const
   SQL_POR_CODIGO =
     'SELECT CODIGO, DESCRICAO, PRECO_VENDA FROM PRODUTO WHERE CODIGO = :CODIGO';
 
-function TProdutoDAO.GetProduto(ACodigo: Integer): TProdutoModel;
+function TProdutoRepositorioFireDAC.ObterPorCodigo(ACodigo: Integer): TProduto;
 var
   Query: TFDQuery;
 begin
@@ -35,10 +35,10 @@ begin
     Query.ParamByName('CODIGO').AsInteger := ACodigo;
     Query.Open;
     if not Query.IsEmpty then
-      Result := TProdutoModel.Create(
+      Result := TProduto.Create(
         Query.FieldByName('CODIGO').AsInteger,
         Query.FieldByName('DESCRICAO').AsString,
-        Query.FieldByName('PRECO_VENDA').AsCurrency);
+        TDinheiro.DeResultado(Query.FieldByName('PRECO_VENDA').AsCurrency));
   finally
     Query.Free;
   end;

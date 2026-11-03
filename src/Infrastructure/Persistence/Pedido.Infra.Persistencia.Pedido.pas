@@ -1,27 +1,27 @@
-﻿unit Pedido.DAO.Pedido;
+﻿unit Pedido.Infra.Persistencia.Pedido;
+
+{ Repositório do agregado Pedido (FireDAC): grava e carrega o pedido inteiro
+  (cabeçalho + itens) em uma única transação. }
 
 interface
 
 uses
-  Pedido.DAO.Base,
-  Pedido.DAO.Interfaces,
-  Pedido.Model.Pedido;
+  Pedido.Domain.Pedido,
+  Pedido.Domain.Repositorios,
+  Pedido.Infra.Persistencia.Base;
 
 type
-  TPedidoDAO = class(TDAOBase, IPedidoDAO)
+  TPedidoRepositorioFireDAC = class(TRepositorioFireDACBase, IPedidoRepository)
   private
     function ProximoNumero: Integer;
-    procedure InserirCabecalho(APedido: TPedidoModel);
-    procedure AtualizarCabecalho(APedido: TPedidoModel);
+    procedure InserirCabecalho(APedido: TPedido);
+    procedure AtualizarCabecalho(APedido: TPedido);
     procedure ExcluirItens(ANumero: Integer);
-    procedure InserirItens(APedido: TPedidoModel);
-    procedure CarregarItens(APedido: TPedidoModel);
+    procedure InserirItens(APedido: TPedido);
+    procedure CarregarItens(APedido: TPedido);
   public
-    // Grava cabeçalho e itens na mesma transação (commit ou rollback).
-    // Em pedido novo (Numero = 0) o número vem do generator.
-    procedure Gravar(APedido: TPedidoModel);
-    // Devolve nil quando não existe. Quem chama é dono do objeto.
-    function GetPedido(ANumero: Integer): TPedidoModel;
+    procedure Salvar(APedido: TPedido);
+    function ObterPorNumero(ANumero: Integer): TPedido;
     procedure Excluir(ANumero: Integer);
   end;
 
@@ -32,10 +32,10 @@ uses
   Data.DB,
   FireDAC.Stan.Param,
   FireDAC.Comp.Client,
-  Pedido.Infra.Idioma,
-  Pedido.Infra.Log,
-  Pedido.Model.Excecoes,
-  Pedido.Model.PedidoItem;
+  Pedido.Domain.Erros,
+  Pedido.Domain.ObjetosValor,
+  Pedido.Domain.PedidoItem,
+  Pedido.Infra.Log;
 
 const
   SQL_PROXIMO_NUMERO =
@@ -74,9 +74,9 @@ const
   SQL_EXCLUIR_PEDIDO =
     'DELETE FROM PEDIDO WHERE NUMERO_PEDIDO = :NUMERO';
 
-{ TPedidoDAO }
+{ TPedidoRepositorioFireDAC }
 
-function TPedidoDAO.ProximoNumero: Integer;
+function TPedidoRepositorioFireDAC.ProximoNumero: Integer;
 var
   Query: TFDQuery;
 begin
@@ -89,7 +89,7 @@ begin
   end;
 end;
 
-procedure TPedidoDAO.InserirCabecalho(APedido: TPedidoModel);
+procedure TPedidoRepositorioFireDAC.InserirCabecalho(APedido: TPedido);
 var
   Query: TFDQuery;
 begin
@@ -99,7 +99,7 @@ begin
     Query.ParamByName('NUMERO').AsInteger := APedido.Numero;
     Query.ParamByName('DATA_EMISSAO').AsDate := APedido.DataEmissao;
     Query.ParamByName('CODIGO_CLIENTE').AsInteger := APedido.CodigoCliente;
-    Query.ParamByName('VALOR_TOTAL').AsCurrency := APedido.ValorTotal;
+    Query.ParamByName('VALOR_TOTAL').AsCurrency := APedido.ValorTotal.Valor;
     Query.ParamByName('OBSERVACAO').AsString := APedido.Observacao;
     Query.ExecSQL;
   finally
@@ -107,7 +107,7 @@ begin
   end;
 end;
 
-procedure TPedidoDAO.AtualizarCabecalho(APedido: TPedidoModel);
+procedure TPedidoRepositorioFireDAC.AtualizarCabecalho(APedido: TPedido);
 var
   Query: TFDQuery;
 begin
@@ -116,17 +116,17 @@ begin
     Query.ParamByName('NUMERO').AsInteger := APedido.Numero;
     Query.ParamByName('DATA_EMISSAO').AsDate := APedido.DataEmissao;
     Query.ParamByName('CODIGO_CLIENTE').AsInteger := APedido.CodigoCliente;
-    Query.ParamByName('VALOR_TOTAL').AsCurrency := APedido.ValorTotal;
+    Query.ParamByName('VALOR_TOTAL').AsCurrency := APedido.ValorTotal.Valor;
     Query.ParamByName('OBSERVACAO').AsString := APedido.Observacao;
     Query.ExecSQL;
     if Query.RowsAffected = 0 then
-      raise EPedidoNaoEncontrado.Create(APedido.Numero);
+      raise EDominioErro.Create(cePedidoNaoEncontrado, APedido.Numero);
   finally
     Query.Free;
   end;
 end;
 
-procedure TPedidoDAO.ExcluirItens(ANumero: Integer);
+procedure TPedidoRepositorioFireDAC.ExcluirItens(ANumero: Integer);
 var
   Query: TFDQuery;
 begin
@@ -139,10 +139,10 @@ begin
   end;
 end;
 
-procedure TPedidoDAO.InserirItens(APedido: TPedidoModel);
+procedure TPedidoRepositorioFireDAC.InserirItens(APedido: TPedido);
 var
   Query: TFDQuery;
-  Item: TPedidoItemModel;
+  Item: TPedidoItem;
 begin
   Query := NovaQuery(SQL_INSERIR_ITEM);
   try
@@ -150,9 +150,9 @@ begin
     begin
       Query.ParamByName('NUMERO').AsInteger := APedido.Numero;
       Query.ParamByName('CODIGO_PRODUTO').AsInteger := Item.CodigoProduto;
-      Query.ParamByName('QUANTIDADE').AsFloat := Item.Quantidade;
-      Query.ParamByName('VLR_UNITARIO').AsCurrency := Item.VlrUnitario;
-      Query.ParamByName('VLR_TOTAL').AsCurrency := Item.VlrTotal;
+      Query.ParamByName('QUANTIDADE').AsFloat := Item.Quantidade.Valor;
+      Query.ParamByName('VLR_UNITARIO').AsCurrency := Item.VlrUnitario.Valor;
+      Query.ParamByName('VLR_TOTAL').AsCurrency := Item.VlrTotal.Valor;
       Query.ExecSQL;
     end;
   finally
@@ -160,7 +160,7 @@ begin
   end;
 end;
 
-procedure TPedidoDAO.Gravar(APedido: TPedidoModel);
+procedure TPedidoRepositorioFireDAC.Salvar(APedido: TPedido);
 var
   NumeroOriginal: Integer;
 begin
@@ -183,17 +183,15 @@ begin
         FConexao.Rollback;
       // Se o número foi sorteado dentro da transação, volta ao estado anterior.
       APedido.Numero := NumeroOriginal;
-      if E is EPedidoErro then
+      if E is EDominioErro then
         raise;
-      begin
-        RegistrarLog('Falha ao gravar o pedido', E);
-        raise EPersistencia.Create(Tr('msg.falha_gravar'));
-      end;
+      RegistrarLog('Falha ao gravar o pedido', E);
+      raise EDominioErro.Create(ceFalhaAoGravar);
     end;
   end;
 end;
 
-procedure TPedidoDAO.CarregarItens(APedido: TPedidoModel);
+procedure TPedidoRepositorioFireDAC.CarregarItens(APedido: TPedido);
 var
   Query: TFDQuery;
 begin
@@ -203,11 +201,11 @@ begin
     Query.Open;
     while not Query.Eof do
     begin
-      APedido.AdicionarItem(TPedidoItemModel.Create(
+      APedido.AdicionarItem(TPedidoItem.Create(
         Query.FieldByName('CODIGO_PRODUTO').AsInteger,
         Query.FieldByName('DESCRICAO').AsString,
-        Query.FieldByName('QUANTIDADE').AsFloat,
-        Query.FieldByName('VLR_UNITARIO').AsCurrency));
+        TQuantidade.Criar(Query.FieldByName('QUANTIDADE').AsFloat),
+        TDinheiro.DeResultado(Query.FieldByName('VLR_UNITARIO').AsCurrency)));
       Query.Next;
     end;
   finally
@@ -215,7 +213,7 @@ begin
   end;
 end;
 
-function TPedidoDAO.GetPedido(ANumero: Integer): TPedidoModel;
+function TPedidoRepositorioFireDAC.ObterPorNumero(ANumero: Integer): TPedido;
 var
   Query: TFDQuery;
 begin
@@ -227,12 +225,12 @@ begin
     if Query.IsEmpty then
       Exit;
 
-    Result := TPedidoModel.Create;
+    Result := TPedido.Create;
     try
       Result.Numero := Query.FieldByName('NUMERO_PEDIDO').AsInteger;
       Result.DataEmissao := Query.FieldByName('DATA_EMISSAO').AsDateTime;
-      Result.CodigoCliente := Query.FieldByName('CODIGO_CLIENTE').AsInteger;
-      Result.Observacao := Query.FieldByName('OBSERVACAO').AsString;
+      Result.InformarCliente(Query.FieldByName('CODIGO_CLIENTE').AsInteger);
+      Result.DefinirObservacao(Query.FieldByName('OBSERVACAO').AsString);
       CarregarItens(Result);
     except
       Result.Free;
@@ -243,7 +241,7 @@ begin
   end;
 end;
 
-procedure TPedidoDAO.Excluir(ANumero: Integer);
+procedure TPedidoRepositorioFireDAC.Excluir(ANumero: Integer);
 var
   Query: TFDQuery;
 begin
@@ -255,7 +253,7 @@ begin
       Query.ParamByName('NUMERO').AsInteger := ANumero;
       Query.ExecSQL;
       if Query.RowsAffected = 0 then
-        raise EPedidoNaoEncontrado.Create(ANumero);
+        raise EDominioErro.Create(cePedidoNaoEncontrado, ANumero);
     finally
       Query.Free;
     end;
@@ -265,12 +263,10 @@ begin
     begin
       if FConexao.InTransaction then
         FConexao.Rollback;
-      if E is EPedidoErro then
+      if E is EDominioErro then
         raise;
-      begin
-        RegistrarLog('Falha ao cancelar o pedido', E);
-        raise EPersistencia.Create(Tr('msg.falha_cancelar'));
-      end;
+      RegistrarLog('Falha ao cancelar o pedido', E);
+      raise EDominioErro.Create(ceFalhaAoCancelar);
     end;
   end;
 end;
