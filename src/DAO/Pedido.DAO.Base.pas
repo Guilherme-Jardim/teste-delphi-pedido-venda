@@ -6,10 +6,11 @@
 interface
 
 uses
+  System.Classes,
   FireDAC.Comp.Client;
 
 type
-  TDAOBase = class
+  TDAOBase = class(TInterfacedObject)
   protected
     FConexao: TFDConnection;
     // Cria uma query ligada à conexão. Quem chama deve liberar.

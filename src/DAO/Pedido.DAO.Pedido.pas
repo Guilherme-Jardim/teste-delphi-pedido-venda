@@ -4,10 +4,11 @@ interface
 
 uses
   Pedido.DAO.Base,
+  Pedido.DAO.Interfaces,
   Pedido.Model.Pedido;
 
 type
-  TPedidoDAO = class(TDAOBase)
+  TPedidoDAO = class(TDAOBase, IPedidoDAO)
   private
     function ProximoNumero: Integer;
     procedure InserirCabecalho(APedido: TPedidoModel);

@@ -4,10 +4,11 @@ interface
 
 uses
   Pedido.DAO.Base,
+  Pedido.DAO.Interfaces,
   Pedido.Model.Produto;
 
 type
-  TProdutoDAO = class(TDAOBase)
+  TProdutoDAO = class(TDAOBase, IProdutoDAO)
   public
     // Devolve nil quando o produto não existe. Quem chama é dono do objeto.
     function GetProduto(ACodigo: Integer): TProdutoModel;

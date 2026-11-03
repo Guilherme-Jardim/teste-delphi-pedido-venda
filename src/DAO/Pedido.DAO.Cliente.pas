@@ -4,10 +4,11 @@ interface
 
 uses
   Pedido.DAO.Base,
+  Pedido.DAO.Interfaces,
   Pedido.Model.Cliente;
 
 type
-  TClienteDAO = class(TDAOBase)
+  TClienteDAO = class(TDAOBase, IClienteDAO)
   public
     // Devolve nil quando o cliente não existe. Quem chama é dono do objeto.
     function GetCliente(ACodigo: Integer): TClienteModel;
