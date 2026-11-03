@@ -241,14 +241,14 @@ As bandeiras no topo (Brasil à esquerda, Espanha à direita) trocam todo o text
 
 ## Testes automatizados (DUnitX)
 
-Abra `tests/PedidoVenda.Tests.dpr`, compile e execute (ou rode o `PedidoVenda.Tests.exe` no terminal). São 219 testes:
+Abra `tests/PedidoVenda.Tests.dpr`, compile e execute (ou rode o `PedidoVenda.Tests.exe` no terminal). São 220 testes:
 
 | Grupo | O que confere | Precisa de banco |
 |---|---|---|
 | Totalização | soma dos itens, produtos repetidos, arredondamento, recálculo ao excluir | não |
 | Validação do item | limites de quantidade e valor, código inválido, mensagens por idioma | não |
 | Idioma e versão | português padrão, troca para espanhol, tradução completa, leitura de versão | não |
-| Controller | regras do pedido, com DAOs falsos | não |
+| Controller | regras do pedido (inclusive tamanho da observação), com DAOs falsos | não |
 | Validação das entradas | caminhos, servidores, portas, usuários e senhas, incluindo tentativas de injeção | não |
 | Configuração (INI) | arquivo ausente, válido, corrompido, campos inválidos, gravação atômica, cópia de segurança | não |
 | Inicializador | todos os cenários de inicialização, com peças falsas, inclusive o limite contra laço infinito | não |

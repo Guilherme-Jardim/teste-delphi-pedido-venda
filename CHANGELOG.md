@@ -7,6 +7,15 @@ A versão do aplicativo é definida uma vez, nas opções do projeto (Versão do
 
 ## [Não lançado]
 
+## [2.0.1] - 2026-11-03
+
+### Corrigido
+- A observação do pedido passa a ser validada na regra de negócio (máximo de 200 caracteres), com mensagem nos dois idiomas; antes só o campo da tela limitava o tamanho.
+
+### Alterado
+- Links de comparação do CHANGELOG atualizados.
+- 220 testes automatizados.
+
 ## [2.0.0] - 2026-11-03
 
 Versão principal com `Model`, `DAO` e `Controller`, e a versão com Clean Architecture e DDD passa para a branch `clean-ddd`.
@@ -20,6 +29,8 @@ Versão principal com `Model`, `DAO` e `Controller`, e a versão com Clean Archi
 
 ### Alterado
 - Depois de fechar uma janela, o foco volta para o controle de onde a pessoa veio.
+
+As versões 1.2.0 e 1.3.0 (Clean Architecture e DDD) continuam na branch `clean-ddd`; a 2.0.0 reúne o que elas trouxeram de visual, acessibilidade e Win64 sobre a organização `Model`, `DAO` e `Controller`.
 
 ## [1.1.0] - 2026-11-03
 
@@ -54,6 +65,8 @@ Primeira entrega, com tudo que o teste técnico pede e os bônus.
 - Atalhos de teclado, dicas nos campos e contraste conferido.
 - Testes DUnitX (totalização, validação, idioma, controller e integração com o Firebird).
 
-[Não lançado]: https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/compare/v1.1.0...HEAD
+[Não lançado]: https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/releases/tag/v1.0.0
