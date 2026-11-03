@@ -1,91 +1,114 @@
 ﻿unit Pedido.View.Principal;
 
-{ Tela do Pedido de Venda. Só cuida de ler campos, mostrar dados e
-  capturar teclado; as decisões ficam no controller e no service. }
+{ Tela do Pedido de Venda. Todo o visual está no .dfm, montado com os
+  componentes do pacote Componentes.Pedido. Aqui ficam só os eventos:
+  ler campos, mostrar dados e capturar o teclado. Regras de negócio ficam
+  nos controllers e o SQL nos DAOs. }
 
 interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
+  System.UITypes,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
-  Vcl.Grids,
-  Pedido.Controller.Pedido;
+  Pedido.Controller.Cliente,
+  Pedido.Controller.Pedido,
+  Pedido.Controller.Produto,
+  Pedido.Infra.Idioma,
+  Pedido.Model.Pedido,
+  ComponentIcons,
+  FlagButton,
+  RoundButton,
+  InfoCard,
+  ModernEdit,
+  AlertBar,
+  ModernGrid;
 
 type
   TfrmPedidoVenda = class(TForm)
+    cardItem: TInfoCard;
+    edtCodProduto: TModernEdit;
+    edtDescricao: TModernEdit;
+    edtQuantidade: TModernEdit;
+    edtVlrUnitario: TModernEdit;
+    btnInserirItem: TRoundButton;
+    cardCliente: TInfoCard;
+    edtCodCliente: TModernEdit;
+    edtNomeCliente: TModernEdit;
+    edtCidadeCliente: TModernEdit;
+    edtUFCliente: TModernEdit;
+    edtObservacao: TModernEdit;
+    avisoMensagem: TAlertBar;
     pnlTopo: TPanel;
+    btnLogo: TRoundButton;
+    btnBandeiraEs: TFlagButton;
+    btnBandeiraPt: TFlagButton;
     lblTitulo: TLabel;
     lblSubtitulo: TLabel;
     lblNumeroPedido: TLabel;
-    lblMensagem: TLabel;
-    gbCliente: TGroupBox;
-    lblCodCliente: TLabel;
-    lblNomeCliente: TLabel;
-    lblCidadeCliente: TLabel;
-    lblUFCliente: TLabel;
-    edtCodCliente: TEdit;
-    edtNomeCliente: TEdit;
-    edtCidadeCliente: TEdit;
-    edtUFCliente: TEdit;
-    lblObservacao: TLabel;
-    edtObservacao: TEdit;
-    gbItem: TGroupBox;
-    lblCodProduto: TLabel;
-    lblDescricaoProduto: TLabel;
-    lblQuantidade: TLabel;
-    lblVlrUnitario: TLabel;
-    edtCodProduto: TEdit;
-    edtDescricaoProduto: TEdit;
-    edtQuantidade: TEdit;
-    edtVlrUnitario: TEdit;
-    btnInserirItem: TButton;
-    sgItens: TStringGrid;
-    lblAtalhos: TLabel;
+    btnSair: TRoundButton;
     pnlRodape: TPanel;
+    pnlRodapeLinha: TPanel;
     lblTotalRotulo: TLabel;
     lblTotal: TLabel;
-    btnNovo: TButton;
-    btnCarregar: TButton;
-    btnCancelarPedido: TButton;
-    btnGravar: TButton;
+    btnNovo: TRoundButton;
+    btnCarregar: TRoundButton;
+    btnCancelar: TRoundButton;
+    btnGravar: TRoundButton;
+    cardGrade: TInfoCard;
+    gridItens: TModernGrid;
+    btnEditarItem: TRoundButton;
+    btnExcluirItem: TRoundButton;
     procedure FormCreate(Sender: TObject);
-    procedure CampoCodigoKeyPress(Sender: TObject; var Key: Char);
-    procedure edtCodClienteExit(Sender: TObject);
-    procedure edtCodProdutoExit(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure btnBandeiraEsClick(Sender: TObject);
+    procedure btnBandeiraPtClick(Sender: TObject);
+    procedure edtCodClienteSaida(Sender: TObject);
+    procedure edtCodProdutoSaida(Sender: TObject);
     procedure btnInserirItemClick(Sender: TObject);
-    procedure sgItensKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure sgItensDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect;
-      State: TGridDrawState);
+    procedure btnEditarItemClick(Sender: TObject);
+    procedure btnExcluirItemClick(Sender: TObject);
+    procedure gridItensKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure btnNovoClick(Sender: TObject);
     procedure btnCarregarClick(Sender: TObject);
-    procedure btnCancelarPedidoClick(Sender: TObject);
+    procedure btnCancelarClick(Sender: TObject);
     procedure btnGravarClick(Sender: TObject);
+    procedure btnSairClick(Sender: TObject);
   private
-    FController: TPedidoController;
-    procedure ConfigurarGrid;
-    procedure MostrarErro(const AMensagem: string);
-    procedure LimparMensagem;
+    FPedidoController: TPedidoController;
+    FClienteController: TClienteController;
+    FProdutoController: TProdutoController;
+    FPedido: TPedidoModel;
+    FIndiceEmEdicao: Integer;
+
+    procedure NovoPedido;
+    procedure AplicarIdioma;
+    procedure TrocarIdioma(AIdioma: TIdioma);
+    procedure TratarExcecao(Sender: TObject; E: Exception);
+    procedure AtualizarTela;
+    procedure AtualizarGrade;
+    procedure AtualizarTotal;
+    procedure AtualizarBotaoItem;
     procedure LimparCliente;
     procedure LimparCamposItem;
     procedure PreencherCliente(ACodigo: Integer);
-    procedure AtualizarTela;
-    procedure AtualizarGrid;
-    procedure AtualizarTotal;
-    procedure AtualizarBotaoItem;
     procedure CarregarItemSelecionado;
     procedure ExcluirItemSelecionado;
-    function LerCodigo(AEdit: TEdit; out ACodigo: Integer): Boolean;
+    procedure MostrarErro(const AMensagem: string);
+    function LerCodigo(ACampo: TModernEdit; out ACodigo: Integer): Boolean;
     function PedirNumeroPedido(const ATitulo: string; out ANumero: Integer): Boolean;
   public
-    procedure Iniciar(AController: TPedidoController);
+    // Os controllers pertencem a quem os criou (o .dpr).
+    procedure Iniciar(APedidoController: TPedidoController;
+      AClienteController: TClienteController; AProdutoController: TProdutoController);
   end;
 
 var
@@ -96,10 +119,13 @@ implementation
 {$R *.dfm}
 
 uses
+  Pedido.Infra.Log,
   Pedido.Model.Cliente,
   Pedido.Model.Produto,
   Pedido.Model.PedidoItem,
-  Pedido.Model.Excecoes;
+  Pedido.Model.Excecoes,
+  Pedido.View.Dialogos,
+  Pedido.View.NumeroPedido;
 
 const
   COL_CODIGO = 0;
@@ -117,159 +143,278 @@ end;
 
 procedure TfrmPedidoVenda.FormCreate(Sender: TObject);
 begin
-  ConfigurarGrid;
+  FIndiceEmEdicao := -1;
+  FPedido := TPedidoModel.Create;
+  CarregarIdiomaSalvo;
+  AplicarIdioma;
 end;
 
-procedure TfrmPedidoVenda.Iniciar(AController: TPedidoController);
+procedure TfrmPedidoVenda.FormDestroy(Sender: TObject);
 begin
-  FController := AController;
+  FPedido.Free;
+end;
+
+procedure TfrmPedidoVenda.Iniciar(APedidoController: TPedidoController;
+  AClienteController: TClienteController; AProdutoController: TProdutoController);
+begin
+  FPedidoController := APedidoController;
+  FClienteController := AClienteController;
+  FProdutoController := AProdutoController;
+  Application.OnException := TratarExcecao;
   AtualizarTela;
-  edtCodCliente.SetFocus;
+  ActiveControl := edtCodCliente.Edit;
 end;
 
-procedure TfrmPedidoVenda.ConfigurarGrid;
+procedure TfrmPedidoVenda.AplicarIdioma;
 begin
-  sgItens.Cells[COL_CODIGO, 0] := 'Cód. Produto';
-  sgItens.Cells[COL_DESCRICAO, 0] := 'Descrição';
-  sgItens.Cells[COL_QUANTIDADE, 0] := 'Quantidade';
-  sgItens.Cells[COL_VLR_UNITARIO, 0] := 'Vlr. Unitário';
-  sgItens.Cells[COL_VLR_TOTAL, 0] := 'Vlr. Total';
-  sgItens.ColWidths[COL_CODIGO] := 100;
-  sgItens.ColWidths[COL_DESCRICAO] := 400;
-  sgItens.ColWidths[COL_QUANTIDADE] := 110;
-  sgItens.ColWidths[COL_VLR_UNITARIO] := 120;
-  sgItens.ColWidths[COL_VLR_TOTAL] := 120;
+  Caption := Tr('app.titulo');
+  lblTitulo.Caption := Tr('app.titulo');
+  lblSubtitulo.Caption := Tr('app.subtitulo');
+  lblTotalRotulo.Caption := Tr('total.rotulo');
+
+  cardCliente.Titulo := Tr('cliente.titulo');
+  edtCodCliente.Rotulo := Tr('campo.codigo');
+  edtNomeCliente.Rotulo := Tr('campo.nome');
+  edtCidadeCliente.Rotulo := Tr('campo.cidade');
+  edtUFCliente.Rotulo := Tr('campo.uf');
+  edtObservacao.Rotulo := Tr('campo.obs');
+  edtCodCliente.Dica := Tr('hint.cod_cliente');
+  edtNomeCliente.Dica := Tr('hint.nome');
+  edtObservacao.Dica := Tr('hint.obs');
+
+  cardItem.Titulo := Tr('item.titulo');
+  edtCodProduto.Rotulo := Tr('campo.codigo');
+  edtDescricao.Rotulo := Tr('campo.descricao');
+  edtQuantidade.Rotulo := Tr('campo.quantidade');
+  edtVlrUnitario.Rotulo := Tr('campo.vlrunit');
+  edtCodProduto.Dica := Tr('hint.cod_produto');
+  edtDescricao.Dica := Tr('hint.descricao');
+  edtQuantidade.Dica := Tr('hint.quantidade');
+  edtVlrUnitario.Dica := Tr('hint.vlrunit');
+
+  cardGrade.Titulo := Tr('grade.titulo');
+  gridItens.DefinirColunas(
+    [Tr('grade.codigo'), Tr('grade.descricao'), Tr('grade.quantidade'), Tr('grade.unitario'),
+     Tr('grade.total')],
+    [120, 400, 120, 140, 140]);
+  gridItens.Hint := Tr('hint.grade');
+  gridItens.ShowHint := True;
+
+  btnNovo.Caption := Tr('btn.novo');
+  btnCarregar.Caption := Tr('btn.carregar');
+  btnCancelar.Caption := Tr('btn.cancelar');
+  btnGravar.Caption := Tr('btn.gravar');
+
+  // Dicas e nomes para leitores de tela
+  btnNovo.Hint := Tr('hint.novo');
+  btnCarregar.Hint := Tr('hint.carregar');
+  btnCancelar.Hint := Tr('hint.cancelar');
+  btnGravar.Hint := Tr('hint.gravar');
+  btnInserirItem.Hint := Tr('hint.inserir');
+  btnEditarItem.Hint := Tr('hint.editar');
+  btnExcluirItem.Hint := Tr('hint.excluir');
+  btnSair.Hint := Tr('hint.sair');
+  for var Botao in [btnNovo, btnCarregar, btnCancelar, btnGravar, btnInserirItem] do
+    Botao.ShowHint := True;
+  btnEditarItem.Caption := Tr('hint.editar');
+  btnExcluirItem.Caption := Tr('hint.excluir');
+  btnSair.Caption := Tr('hint.sair');
+  btnLogo.Caption := Tr('app.titulo');
+
+  btnBandeiraEs.Hint := Tr('idioma.trocar_es');
+  btnBandeiraEs.Caption := Tr('idioma.es');
+  btnBandeiraEs.Ativo := IdiomaAtual = idEspanhol;
+  btnBandeiraPt.Hint := Tr('idioma.trocar_pt');
+  btnBandeiraPt.Caption := Tr('idioma.pt');
+  btnBandeiraPt.Ativo := IdiomaAtual = idPortugues;
+
+  if FPedido <> nil then
+  begin
+    if FPedido.Numero > 0 then
+      lblNumeroPedido.Caption := Tr('pedido.numero', [FPedido.Numero])
+    else
+      lblNumeroPedido.Caption := Tr('pedido.novo');
+    if FPedidoController <> nil then
+    begin
+      AtualizarGrade;
+      AtualizarBotaoItem;
+    end;
+  end;
+end;
+
+procedure TfrmPedidoVenda.TrocarIdioma(AIdioma: TIdioma);
+begin
+  if AIdioma = IdiomaAtual then
+    Exit;
+  DefinirIdioma(AIdioma);
+  AplicarIdioma;
+  avisoMensagem.Limpar;
+end;
+
+procedure TfrmPedidoVenda.btnBandeiraEsClick(Sender: TObject);
+begin
+  TrocarIdioma(idEspanhol);
+end;
+
+procedure TfrmPedidoVenda.btnBandeiraPtClick(Sender: TObject);
+begin
+  TrocarIdioma(idPortugues);
+end;
+
+procedure TfrmPedidoVenda.TratarExcecao(Sender: TObject; E: Exception);
+begin
+  // Falha inesperada: o detalhe técnico vai para o log e a tela mostra um aviso simples.
+  RegistrarLog('Falha inesperada', E);
+  MostrarErro(Tr('msg.erro_inesperado'));
+end;
+
+procedure TfrmPedidoVenda.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if not (ssCtrl in Shift) then
+    Exit;
+  case Key of
+    Ord('G'): btnGravarClick(Sender);
+    Ord('N'): btnNovoClick(Sender);
+    Ord('L'): btnCarregarClick(Sender);
+    Ord('D'): btnCancelarClick(Sender);
+    VK_RETURN: btnInserirItemClick(Sender);
+  else
+    Exit;
+  end;
+  Key := 0;
 end;
 
 procedure TfrmPedidoVenda.MostrarErro(const AMensagem: string);
 begin
-  lblMensagem.Caption := AMensagem;
+  avisoMensagem.Mostrar(AMensagem, taErro);
 end;
 
-procedure TfrmPedidoVenda.LimparMensagem;
+function TfrmPedidoVenda.LerCodigo(ACampo: TModernEdit; out ACodigo: Integer): Boolean;
 begin
-  lblMensagem.Caption := '';
+  Result := TryStrToInt(Trim(ACampo.Texto), ACodigo) and (ACodigo > 0);
 end;
 
 procedure TfrmPedidoVenda.LimparCliente;
 begin
-  edtNomeCliente.Clear;
-  edtCidadeCliente.Clear;
-  edtUFCliente.Clear;
+  edtNomeCliente.Limpar;
+  edtCidadeCliente.Limpar;
+  edtUFCliente.Limpar;
 end;
 
 procedure TfrmPedidoVenda.LimparCamposItem;
 begin
-  edtCodProduto.Clear;
-  edtDescricaoProduto.Clear;
-  edtQuantidade.Clear;
-  edtVlrUnitario.Clear;
-end;
-
-function TfrmPedidoVenda.LerCodigo(AEdit: TEdit; out ACodigo: Integer): Boolean;
-begin
-  Result := TryStrToInt(Trim(AEdit.Text), ACodigo) and (ACodigo > 0);
+  edtCodProduto.Limpar;
+  edtDescricao.Limpar;
+  edtQuantidade.Limpar;
+  edtVlrUnitario.Limpar;
 end;
 
 procedure TfrmPedidoVenda.PreencherCliente(ACodigo: Integer);
 var
-  Cliente: TCliente;
+  Cliente: TClienteModel;
 begin
-  Cliente := FController.InformarCliente(ACodigo);
+  Cliente := FClienteController.GetCliente(ACodigo);
   try
-    edtCodCliente.Text := IntToStr(Cliente.Codigo);
-    edtNomeCliente.Text := Cliente.Nome;
-    edtCidadeCliente.Text := Cliente.Cidade;
-    edtUFCliente.Text := Cliente.UF;
+    FPedido.CodigoCliente := Cliente.Codigo;
+    edtCodCliente.Texto := IntToStr(Cliente.Codigo);
+    edtNomeCliente.Texto := Cliente.Nome;
+    edtCidadeCliente.Texto := Cliente.Cidade;
+    edtUFCliente.Texto := Cliente.UF;
   finally
     Cliente.Free;
   end;
 end;
 
+procedure TfrmPedidoVenda.NovoPedido;
+begin
+  FPedido.Free;
+  FPedido := TPedidoModel.Create;
+  FIndiceEmEdicao := -1;
+  AtualizarTela;
+end;
+
 procedure TfrmPedidoVenda.AtualizarTela;
 begin
-  LimparMensagem;
-  if FController.Pedido.Numero > 0 then
-    lblNumeroPedido.Caption := Format('Pedido nº %d', [FController.Pedido.Numero])
+  avisoMensagem.Limpar;
+  if FPedido.Numero > 0 then
+    lblNumeroPedido.Caption := Tr('pedido.numero', [FPedido.Numero])
   else
-    lblNumeroPedido.Caption := 'Novo pedido';
+    lblNumeroPedido.Caption := Tr('pedido.novo');
 
-  if FController.Pedido.CodigoCliente > 0 then
-    PreencherCliente(FController.Pedido.CodigoCliente)
+  if FPedido.CodigoCliente > 0 then
+    PreencherCliente(FPedido.CodigoCliente)
   else
   begin
-    edtCodCliente.Clear;
+    edtCodCliente.Limpar;
     LimparCliente;
   end;
+  edtObservacao.Texto := FPedido.Observacao;
 
-  edtObservacao.Text := FController.Pedido.Observacao;
   LimparCamposItem;
-  AtualizarGrid;
+  AtualizarGrade;
   AtualizarTotal;
   AtualizarBotaoItem;
 end;
 
-procedure TfrmPedidoVenda.AtualizarGrid;
+procedure TfrmPedidoVenda.AtualizarGrade;
 var
   I: Integer;
-  Item: TPedidoItem;
+  Item: TPedidoItemModel;
 begin
-  if FController.Pedido.Itens.Count = 0 then
+  if FPedido.Itens.Count = 0 then
   begin
-    sgItens.RowCount := 2;
-    sgItens.Rows[1].Clear;
+    gridItens.LimparLinhas;
     Exit;
   end;
 
-  sgItens.RowCount := FController.Pedido.Itens.Count + 1;
-  for I := 0 to FController.Pedido.Itens.Count - 1 do
+  gridItens.RowCount := FPedido.Itens.Count + 1;
+  for I := 0 to FPedido.Itens.Count - 1 do
   begin
-    Item := FController.Pedido.Itens[I];
-    sgItens.Cells[COL_CODIGO, I + 1] := IntToStr(Item.CodigoProduto);
-    sgItens.Cells[COL_DESCRICAO, I + 1] := Item.Descricao;
-    sgItens.Cells[COL_QUANTIDADE, I + 1] := FormatFloat('#,##0.###', Item.Quantidade);
-    sgItens.Cells[COL_VLR_UNITARIO, I + 1] := FormatarMoeda(Item.VlrUnitario);
-    sgItens.Cells[COL_VLR_TOTAL, I + 1] := FormatarMoeda(Item.VlrTotal);
+    Item := FPedido.Itens[I];
+    gridItens.Cells[COL_CODIGO, I + 1] := IntToStr(Item.CodigoProduto);
+    gridItens.Cells[COL_DESCRICAO, I + 1] := Item.Descricao;
+    gridItens.Cells[COL_QUANTIDADE, I + 1] := FormatFloat('#,##0.###', Item.Quantidade);
+    gridItens.Cells[COL_VLR_UNITARIO, I + 1] := FormatarMoeda(Item.VlrUnitario);
+    gridItens.Cells[COL_VLR_TOTAL, I + 1] := FormatarMoeda(Item.VlrTotal);
   end;
 end;
 
 procedure TfrmPedidoVenda.AtualizarTotal;
 begin
-  lblTotal.Caption := 'R$ ' + FormatarMoeda(FController.Pedido.ValorTotal);
+  // Sempre calculado a partir dos itens.
+  lblTotal.Caption := 'R$ ' + FormatarMoeda(FPedido.ValorTotal);
 end;
 
 procedure TfrmPedidoVenda.AtualizarBotaoItem;
 begin
-  if FController.EmEdicao then
-    btnInserirItem.Caption := 'Atualizar Item'
-  else
-    btnInserirItem.Caption := 'Inserir Item';
-end;
-
-procedure TfrmPedidoVenda.CampoCodigoKeyPress(Sender: TObject; var Key: Char);
-begin
-  // ENTER avança para o próximo campo (e dispara o OnExit do atual).
-  if Key = #13 then
+  if FIndiceEmEdicao >= 0 then
   begin
-    Key := #0;
-    SelectNext(Sender as TWinControl, True, True);
+    btnInserirItem.Caption := Tr('item.atualizar');
+    btnInserirItem.Icone := icCheck;
+  end
+  else
+  begin
+    btnInserirItem.Caption := Tr('item.inserir');
+    btnInserirItem.Icone := icMais;
   end;
 end;
 
-procedure TfrmPedidoVenda.edtCodClienteExit(Sender: TObject);
+procedure TfrmPedidoVenda.edtCodClienteSaida(Sender: TObject);
 var
   Codigo: Integer;
 begin
-  LimparMensagem;
-  if Trim(edtCodCliente.Text) = '' then
+  avisoMensagem.Limpar;
+  if Trim(edtCodCliente.Texto) = '' then
   begin
+    FPedido.CodigoCliente := 0;
     LimparCliente;
     Exit;
   end;
   if not LerCodigo(edtCodCliente, Codigo) then
   begin
+    FPedido.CodigoCliente := 0;
     LimparCliente;
-    MostrarErro('Código de cliente inválido.');
+    MostrarErro(Tr('msg.cliente_invalido'));
     Exit;
   end;
   try
@@ -277,44 +422,44 @@ begin
   except
     on E: EClienteNaoEncontrado do
     begin
+      FPedido.CodigoCliente := 0;
       LimparCliente;
-      FController.Pedido.CodigoCliente := 0;
       MostrarErro(E.Message);
     end;
   end;
 end;
 
-procedure TfrmPedidoVenda.edtCodProdutoExit(Sender: TObject);
+procedure TfrmPedidoVenda.edtCodProdutoSaida(Sender: TObject);
 var
   Codigo: Integer;
-  Produto: TProduto;
+  Produto: TProdutoModel;
 begin
-  LimparMensagem;
-  if Trim(edtCodProduto.Text) = '' then
+  avisoMensagem.Limpar;
+  if Trim(edtCodProduto.Texto) = '' then
   begin
-    edtDescricaoProduto.Clear;
+    edtDescricao.Limpar;
     Exit;
   end;
   if not LerCodigo(edtCodProduto, Codigo) then
   begin
-    edtDescricaoProduto.Clear;
-    MostrarErro('Código de produto inválido.');
+    edtDescricao.Limpar;
+    MostrarErro(Tr('msg.produto_invalido'));
     Exit;
   end;
   try
-    Produto := FController.ConsultarProduto(Codigo);
+    Produto := FProdutoController.GetProduto(Codigo);
     try
-      edtDescricaoProduto.Text := Produto.Descricao;
+      edtDescricao.Texto := Produto.Descricao;
       // Sugere o preço de venda; o operador pode alterar.
-      if not FController.EmEdicao then
-        edtVlrUnitario.Text := FormatFloat('0.00', Produto.PrecoVenda);
+      if FIndiceEmEdicao < 0 then
+        edtVlrUnitario.Texto := FormatFloat('0.00', Produto.PrecoVenda);
     finally
       Produto.Free;
     end;
   except
     on E: EProdutoNaoEncontrado do
     begin
-      edtDescricaoProduto.Clear;
+      edtDescricao.Limpar;
       MostrarErro(E.Message);
     end;
   end;
@@ -322,33 +467,41 @@ end;
 
 procedure TfrmPedidoVenda.btnInserirItemClick(Sender: TObject);
 var
-  Codigo: Integer;
+  Codigo, Indice: Integer;
   Quantidade: Double;
   Valor: Currency;
-  Indice: Integer;
+  Item: TPedidoItemModel;
 begin
-  LimparMensagem;
+  avisoMensagem.Limpar;
   if not LerCodigo(edtCodProduto, Codigo) then
   begin
-    MostrarErro('Informe o código do produto.');
+    MostrarErro(Tr('msg.informe_produto'));
     edtCodProduto.SetFocus;
     Exit;
   end;
-  if not TryStrToFloat(Trim(edtQuantidade.Text), Quantidade) or (Quantidade <= 0) then
+  if not TryStrToFloat(Trim(edtQuantidade.Texto), Quantidade) or (Quantidade <= 0) then
   begin
-    MostrarErro('Informe uma quantidade maior que zero.');
+    MostrarErro(Tr('msg.informe_quantidade'));
     edtQuantidade.SetFocus;
     Exit;
   end;
-  if not TryStrToCurr(Trim(edtVlrUnitario.Text), Valor) or (Valor < 0) then
+  if not TryStrToCurr(Trim(edtVlrUnitario.Texto), Valor) or (Valor < 0) then
   begin
-    MostrarErro('Informe um valor unitário válido.');
+    MostrarErro(Tr('msg.informe_valor'));
     edtVlrUnitario.SetFocus;
     Exit;
   end;
 
   try
-    Indice := FController.SalvarItem(Codigo, Quantidade, Valor);
+    Item := FPedidoController.CriarItem(Codigo, Quantidade, Valor);
+    if FIndiceEmEdicao >= 0 then
+    begin
+      Indice := FIndiceEmEdicao;
+      FPedido.AtualizarItem(Indice, Item);
+      FIndiceEmEdicao := -1;
+    end
+    else
+      Indice := FPedido.AdicionarItem(Item);
   except
     on E: EPedidoErro do
     begin
@@ -358,14 +511,14 @@ begin
   end;
 
   LimparCamposItem;
-  AtualizarGrid;
-  sgItens.Row := Indice + 1;
+  AtualizarGrade;
+  gridItens.Row := Indice + 1;
   AtualizarTotal;
   AtualizarBotaoItem;
   edtCodProduto.SetFocus;
 end;
 
-procedure TfrmPedidoVenda.sgItensKeyDown(Sender: TObject; var Key: Word;
+procedure TfrmPedidoVenda.gridItensKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   case Key of
@@ -382,27 +535,35 @@ begin
   end;
 end;
 
+procedure TfrmPedidoVenda.btnEditarItemClick(Sender: TObject);
+begin
+  CarregarItemSelecionado;
+end;
+
+procedure TfrmPedidoVenda.btnExcluirItemClick(Sender: TObject);
+begin
+  ExcluirItemSelecionado;
+end;
+
 procedure TfrmPedidoVenda.CarregarItemSelecionado;
 var
-  Item: TPedidoItem;
+  Indice: Integer;
+  Item: TPedidoItemModel;
 begin
-  LimparMensagem;
-  if FController.Pedido.Itens.Count = 0 then
+  avisoMensagem.Limpar;
+  Indice := gridItens.Row - 1;
+  if (FPedido.Itens.Count = 0) or (Indice < 0) or (Indice >= FPedido.Itens.Count) then
+  begin
+    MostrarErro(Tr('msg.selecione_item'));
     Exit;
-  try
-    Item := FController.IniciarEdicaoItem(sgItens.Row - 1);
-  except
-    on E: EPedidoErro do
-    begin
-      MostrarErro(E.Message);
-      Exit;
-    end;
   end;
 
-  edtCodProduto.Text := IntToStr(Item.CodigoProduto);
-  edtDescricaoProduto.Text := Item.Descricao;
-  edtQuantidade.Text := FloatToStr(Item.Quantidade);
-  edtVlrUnitario.Text := FormatFloat('0.00', Item.VlrUnitario);
+  FIndiceEmEdicao := Indice;
+  Item := FPedido.Itens[Indice];
+  edtCodProduto.Texto := IntToStr(Item.CodigoProduto);
+  edtDescricao.Texto := Item.Descricao;
+  edtQuantidade.Texto := FloatToStr(Item.Quantidade);
+  edtVlrUnitario.Texto := FormatFloat('0.00', Item.VlrUnitario);
   AtualizarBotaoItem;
   edtQuantidade.SetFocus;
 end;
@@ -411,95 +572,52 @@ procedure TfrmPedidoVenda.ExcluirItemSelecionado;
 var
   Indice: Integer;
 begin
-  LimparMensagem;
-  if FController.Pedido.Itens.Count = 0 then
+  avisoMensagem.Limpar;
+  Indice := gridItens.Row - 1;
+  if (FPedido.Itens.Count = 0) or (Indice < 0) or (Indice >= FPedido.Itens.Count) then
     Exit;
 
-  Indice := sgItens.Row - 1;
-  if MessageDlg(Format('Excluir o item "%s" do pedido?',
-    [FController.Pedido.Itens[Indice].Descricao]),
-    mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+  if not ConfirmarAcao(Tr('msg.confirmar_excluir_item', [FPedido.Itens[Indice].Descricao])) then
     Exit;
 
-  FController.ExcluirItem(Indice);
-  // Regrava grid e total na hora, para a tela refletir a exclusão.
-  AtualizarGrid;
+  FPedido.RemoverItem(Indice);
+  // Ajusta o índice do item em edição, se houver.
+  if FIndiceEmEdicao = Indice then
+  begin
+    FIndiceEmEdicao := -1;
+    LimparCamposItem;
+  end
+  else if FIndiceEmEdicao > Indice then
+    Dec(FIndiceEmEdicao);
+
+  // Grade e total são refeitos na hora, para a tela refletir a exclusão.
+  AtualizarGrade;
   AtualizarTotal;
   AtualizarBotaoItem;
-  if FController.Pedido.Itens.Count = 0 then
-    LimparCamposItem;
-end;
-
-procedure TfrmPedidoVenda.sgItensDrawCell(Sender: TObject; ACol, ARow: Integer;
-  Rect: TRect; State: TGridDrawState);
-var
-  Texto: string;
-  Flags: Integer;
-begin
-  Texto := sgItens.Cells[ACol, ARow];
-  if ARow = 0 then
-  begin
-    sgItens.Canvas.Brush.Color := RGB($1F, $29, $37);
-    sgItens.Canvas.Font.Color := clWhite;
-    sgItens.Canvas.Font.Style := [fsBold];
-  end
-  else if gdSelected in State then
-  begin
-    sgItens.Canvas.Brush.Color := RGB($25, $63, $EB);
-    sgItens.Canvas.Font.Color := clWhite;
-  end
-  else
-  begin
-    if Odd(ARow) then
-      sgItens.Canvas.Brush.Color := clWhite
-    else
-      sgItens.Canvas.Brush.Color := RGB($F9, $FA, $FB);
-    sgItens.Canvas.Font.Color := RGB($11, $18, $27);
-  end;
-  sgItens.Canvas.FillRect(Rect);
-
-  Flags := DT_SINGLELINE or DT_VCENTER or DT_END_ELLIPSIS;
-  if ACol >= COL_QUANTIDADE then
-    Flags := Flags or DT_RIGHT
-  else
-    Flags := Flags or DT_LEFT;
-  InflateRect(Rect, -8, 0);
-  DrawText(sgItens.Canvas.Handle, PChar(Texto), Length(Texto), Rect, Flags);
 end;
 
 function TfrmPedidoVenda.PedirNumeroPedido(const ATitulo: string;
   out ANumero: Integer): Boolean;
-var
-  Valor: string;
 begin
-  Result := False;
-  Valor := '';
-  if not InputQuery(ATitulo, 'Número do pedido', Valor) then
-    Exit;
-  if not TryStrToInt(Trim(Valor), ANumero) or (ANumero <= 0) then
-  begin
-    MostrarErro('Número de pedido inválido.');
-    Exit;
-  end;
-  Result := True;
+  Result := TfrmNumeroPedido.Perguntar(ATitulo, ANumero);
 end;
 
 procedure TfrmPedidoVenda.btnNovoClick(Sender: TObject);
 begin
-  FController.NovoPedido;
-  AtualizarTela;
+  NovoPedido;
   edtCodCliente.SetFocus;
 end;
 
 procedure TfrmPedidoVenda.btnCarregarClick(Sender: TObject);
 var
   Numero: Integer;
+  Carregado: TPedidoModel;
 begin
-  LimparMensagem;
-  if not PedirNumeroPedido('Carregar pedido', Numero) then
+  avisoMensagem.Limpar;
+  if not PedirNumeroPedido(Tr('dlg.numero_carregar'), Numero) then
     Exit;
   try
-    FController.CarregarPedido(Numero);
+    Carregado := FPedidoController.GetPedido(Numero);
   except
     on E: EPedidoErro do
     begin
@@ -507,25 +625,27 @@ begin
       Exit;
     end;
   end;
+  FPedido.Free;
+  FPedido := Carregado;
+  FIndiceEmEdicao := -1;
   AtualizarTela;
 end;
 
-procedure TfrmPedidoVenda.btnCancelarPedidoClick(Sender: TObject);
+procedure TfrmPedidoVenda.btnCancelarClick(Sender: TObject);
 var
   Numero: Integer;
 begin
-  LimparMensagem;
-  Numero := FController.Pedido.Numero;
+  avisoMensagem.Limpar;
+  Numero := FPedido.Numero;
   if Numero <= 0 then
-    if not PedirNumeroPedido('Cancelar pedido', Numero) then
+    if not PedirNumeroPedido(Tr('dlg.numero_cancelar'), Numero) then
       Exit;
 
-  if MessageDlg(Format('Cancelar o pedido %d? Os itens também serão excluídos.',
-    [Numero]), mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+  if not ConfirmarAcao(Tr('msg.confirmar_cancelar', [Numero])) then
     Exit;
 
   try
-    FController.CancelarPedido(Numero);
+    FPedidoController.Cancelar(Numero);
   except
     on E: EPedidoErro do
     begin
@@ -533,16 +653,21 @@ begin
       Exit;
     end;
   end;
-  AtualizarTela;
-  ShowMessage(Format('Pedido %d cancelado.', [Numero]));
+
+  // Se o pedido cancelado era o da tela, limpa a tela.
+  if FPedido.Numero = Numero then
+    NovoPedido;
+  avisoMensagem.Mostrar(Tr('msg.cancelado', [Numero]), taSucesso);
 end;
 
 procedure TfrmPedidoVenda.btnGravarClick(Sender: TObject);
+var
+  Numero: Integer;
 begin
-  LimparMensagem;
-  FController.Pedido.Observacao := Trim(edtObservacao.Text);
+  avisoMensagem.Limpar;
+  FPedido.Observacao := Trim(edtObservacao.Texto);
   try
-    FController.GravarPedido;
+    FPedidoController.Gravar(FPedido);
   except
     on E: EPedidoErro do
     begin
@@ -550,10 +675,16 @@ begin
       Exit;
     end;
   end;
-  ShowMessage(Format('Pedido %d gravado com sucesso.', [FController.Pedido.Numero]));
-  FController.NovoPedido;
-  AtualizarTela;
+
+  Numero := FPedido.Numero;
+  NovoPedido;
+  avisoMensagem.Mostrar(Tr('msg.gravado', [Numero]), taSucesso);
   edtCodCliente.SetFocus;
+end;
+
+procedure TfrmPedidoVenda.btnSairClick(Sender: TObject);
+begin
+  Close;
 end;
 
 end.
