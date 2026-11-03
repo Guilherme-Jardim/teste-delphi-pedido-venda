@@ -17,6 +17,8 @@ type
 implementation
 
 uses
+  Data.DB,
+  FireDAC.Stan.Param,
   FireDAC.Comp.Client;
 
 const

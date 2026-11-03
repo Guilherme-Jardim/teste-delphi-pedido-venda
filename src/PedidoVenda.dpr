@@ -61,7 +61,8 @@ var
   Conexao: TFDConnection;
   Composicao: TComposicaoSistema;
 begin
-  ReportMemoryLeaksOnShutdown := True;
+  // O relatório de vazamentos só aparece ao rodar pelo depurador.
+  ReportMemoryLeaksOnShutdown := DebugHook <> 0;
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   CarregarIdiomaSalvo;

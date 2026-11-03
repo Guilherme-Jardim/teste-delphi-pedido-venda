@@ -232,7 +232,7 @@ procedure TTestesConfig.ValorInvalidoEhRecusadoEMotivoCitaOCampo(const ASubstitu
 var
   Repo: IConfigRepositorio;
   Config: TConfigBanco;
-  Motivo, Campo, Texto, Linha: string;
+  Motivo, Campo, Texto: string;
   Linhas: TStringList;
   I: Integer;
 begin
