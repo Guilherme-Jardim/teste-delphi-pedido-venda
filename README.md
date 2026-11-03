@@ -10,7 +10,7 @@ O teste pede organização em camadas (exemplo: MVC/Service/Repository). Por iss
 
 | Versão | Onde está | Organização |
 |---|---|---|
-| **Principal (esta, `main`)** | branch `main`, tag `v2.0.0` | `Model`, `DAO`, `Controller` e `View`, com interfaces e injeção de dependências. É o que o teste pede, sem camadas a mais. |
+| **Principal (esta, `main`)** | branch `main`, tag `v2.0.1` | `Model`, `DAO`, `Controller` e `View`, com interfaces e injeção de dependências. É o que o teste pede, sem camadas a mais. |
 | **Avançada** | branch [`clean-ddd`](https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/tree/clean-ddd), tag `v1.3.0` | Clean Architecture e DDD: `Domain`, `Application`, `Infrastructure` e `Presentation`, com agregado, objetos de valor e eventos de domínio. É a mesma tela e o mesmo banco, com a lógica distribuída em mais camadas. |
 
 Para abrir a versão avançada: `git checkout clean-ddd` (ou baixe a tag `v1.3.0`) e siga o README daquela versão.
