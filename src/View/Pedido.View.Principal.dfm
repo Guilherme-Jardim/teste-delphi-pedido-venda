@@ -366,6 +366,20 @@
       ParentFont = False
       Transparent = True
     end
+    object lblVersao: TLabel
+      Left = 232
+      Top = 19
+      Width = 36
+      Height = 17
+      Caption = 'v1.1.0'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = 12100500
+      Font.Height = -12
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      Transparent = True
+    end
     object lblSubtitulo: TLabel
       Left = 84
       Top = 42

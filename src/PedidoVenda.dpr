@@ -13,6 +13,7 @@ uses
   Pedido.Model.Pedido in 'Model\Pedido.Model.Pedido.pas',
   Pedido.Infra.Idioma in 'Infra\Pedido.Infra.Idioma.pas',
   Pedido.Infra.Log in 'Infra\Pedido.Infra.Log.pas',
+  Pedido.Infra.Versao in 'Infra\Pedido.Infra.Versao.pas',
   Pedido.Infra.Config in 'Infra\Pedido.Infra.Config.pas',
   Pedido.Infra.Conexao in 'Infra\Pedido.Infra.Conexao.pas',
   Pedido.DAO.Base in 'DAO\Pedido.DAO.Base.pas',
@@ -64,6 +65,7 @@ begin
   Application.MainFormOnTaskbar := True;
   CarregarIdiomaSalvo;
   Application.Title := Tr('app.titulo');
+  RegistrarInformacao('Pedido de Venda ' + VersaoDoExecutavel.Completa + ' iniciado');
 
   Dono := TComponent.Create(nil);
   try

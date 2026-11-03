@@ -52,6 +52,7 @@ type
     btnBandeiraPt: TFlagButton;
     lblTitulo: TLabel;
     lblSubtitulo: TLabel;
+    lblVersao: TLabel;
     lblNumeroPedido: TLabel;
     btnSair: TRoundButton;
     pnlRodape: TPanel;
@@ -120,6 +121,7 @@ implementation
 
 uses
   Pedido.Infra.Log,
+  Pedido.Infra.Versao,
   Pedido.Model.Cliente,
   Pedido.Model.Produto,
   Pedido.Model.PedidoItem,
@@ -167,8 +169,9 @@ end;
 
 procedure TfrmPedidoVenda.AplicarIdioma;
 begin
-  Caption := Tr('app.titulo');
+  Caption := Tr('app.titulo') + ' ' + VersaoDoExecutavel.Resumida;
   lblTitulo.Caption := Tr('app.titulo');
+  lblVersao.Caption := 'v' + VersaoDoExecutavel.Resumida;
   lblSubtitulo.Caption := Tr('app.subtitulo');
   lblTotalRotulo.Caption := Tr('total.rotulo');
 

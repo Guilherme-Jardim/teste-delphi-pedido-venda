@@ -10,6 +10,8 @@ uses
   System.SysUtils;
 
 procedure RegistrarLog(const AContexto: string; AErro: Exception);
+// Registra uma linha informativa (por exemplo, a versão ao abrir o sistema).
+procedure RegistrarInformacao(const AMensagem: string);
 
 implementation
 
@@ -25,21 +27,30 @@ begin
     'pedido.log');
 end;
 
-procedure RegistrarLog(const AContexto: string; AErro: Exception);
+procedure GravarLinha(const ALinha: string);
 var
-  Caminho, Linha: string;
+  Caminho: string;
 begin
   try
     Caminho := CaminhoDoLog;
     TDirectory.CreateDirectory(TPath.GetDirectoryName(Caminho));
     if TFile.Exists(Caminho) and (TFile.GetSize(Caminho) > TAMANHO_MAXIMO_ARQUIVO) then
       TFile.Delete(Caminho);
-    Linha := Format('%s | %s | %s: %s',
-      [FormatDateTime('yyyy-mm-dd hh:nn:ss', Now), AContexto, AErro.ClassName, AErro.Message]);
-    TFile.AppendAllText(Caminho, Linha + sLineBreak, TEncoding.UTF8);
+    TFile.AppendAllText(Caminho, ALinha + sLineBreak, TEncoding.UTF8);
   except
     // O log nunca pode derrubar o sistema.
   end;
+end;
+
+procedure RegistrarLog(const AContexto: string; AErro: Exception);
+begin
+  GravarLinha(Format('%s | %s | %s: %s',
+    [FormatDateTime('yyyy-mm-dd hh:nn:ss', Now), AContexto, AErro.ClassName, AErro.Message]));
+end;
+
+procedure RegistrarInformacao(const AMensagem: string);
+begin
+  GravarLinha(Format('%s | info | %s', [FormatDateTime('yyyy-mm-dd hh:nn:ss', Now), AMensagem]));
 end;
 
 end.
