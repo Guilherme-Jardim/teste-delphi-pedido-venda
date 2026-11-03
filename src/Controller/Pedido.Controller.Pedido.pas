@@ -1,33 +1,30 @@
 ﻿unit Pedido.Controller.Pedido;
 
-{ Regras de negócio do pedido. Não tem SQL (fica no DAO) nem conhece a tela. }
+{ Regras de negócio do pedido. Não tem SQL (fica no DAO) nem conhece a tela,
+  e depende só de interfaces: o DAO e os controllers de cliente e produto
+  chegam pelo construtor. }
 
 interface
 
 uses
-  FireDAC.Comp.Client,
-  Pedido.Controller.Cliente,
-  Pedido.Controller.Produto,
-  Pedido.DAO.Pedido,
+  Pedido.Controller.Interfaces,
+  Pedido.DAO.Interfaces,
   Pedido.Model.Pedido,
   Pedido.Model.PedidoItem;
 
 type
-  TPedidoController = class
+  TPedidoController = class(TInterfacedObject, IPedidoController)
   private
-    FPedidoDAO: TPedidoDAO;
-    FClienteController: TClienteController;
-    FProdutoController: TProdutoController;
+    FPedidoDAO: IPedidoDAO;
+    FClientes: IClienteController;
+    FProdutos: IProdutoController;
   public
-    constructor Create(AConexao: TFDConnection);
-    destructor Destroy; override;
+    constructor Create(const APedidoDAO: IPedidoDAO; const AClientes: IClienteController;
+      const AProdutos: IProdutoController);
 
-    // Monta o item a partir do cadastro do produto (descrição vem do banco).
     function CriarItem(ACodigoProduto: Integer; AQuantidade: Double;
       AVlrUnitario: Currency): TPedidoItemModel;
-
     procedure Gravar(APedido: TPedidoModel);
-    // Levanta EPedidoNaoEncontrado se o número não existir.
     function GetPedido(ANumero: Integer): TPedidoModel;
     procedure Cancelar(ANumero: Integer);
   end;
@@ -37,23 +34,16 @@ implementation
 uses
   Pedido.Infra.Idioma,
   Pedido.Model.Cliente,
-  Pedido.Model.Produto,
-  Pedido.Model.Excecoes;
+  Pedido.Model.Excecoes,
+  Pedido.Model.Produto;
 
-constructor TPedidoController.Create(AConexao: TFDConnection);
+constructor TPedidoController.Create(const APedidoDAO: IPedidoDAO;
+  const AClientes: IClienteController; const AProdutos: IProdutoController);
 begin
   inherited Create;
-  FPedidoDAO := TPedidoDAO.Create(AConexao);
-  FClienteController := TClienteController.Create(AConexao);
-  FProdutoController := TProdutoController.Create(AConexao);
-end;
-
-destructor TPedidoController.Destroy;
-begin
-  FProdutoController.Free;
-  FClienteController.Free;
-  FPedidoDAO.Free;
-  inherited;
+  FPedidoDAO := APedidoDAO;
+  FClientes := AClientes;
+  FProdutos := AProdutos;
 end;
 
 function TPedidoController.CriarItem(ACodigoProduto: Integer; AQuantidade: Double;
@@ -61,7 +51,7 @@ function TPedidoController.CriarItem(ACodigoProduto: Integer; AQuantidade: Doubl
 var
   Produto: TProdutoModel;
 begin
-  Produto := FProdutoController.GetProduto(ACodigoProduto);
+  Produto := FProdutos.GetProduto(ACodigoProduto);
   try
     Result := TPedidoItemModel.Create(Produto.Codigo, Produto.Descricao,
       AQuantidade, AVlrUnitario);
@@ -80,7 +70,7 @@ begin
     raise EValidacao.Create(Tr('msg.sem_itens'));
 
   // Garante que o cliente ainda existe antes de abrir a transação.
-  Cliente := FClienteController.GetCliente(APedido.CodigoCliente);
+  Cliente := FClientes.GetCliente(APedido.CodigoCliente);
   Cliente.Free;
 
   FPedidoDAO.Gravar(APedido);

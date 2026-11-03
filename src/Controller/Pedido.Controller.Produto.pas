@@ -3,20 +3,16 @@
 interface
 
 uses
-  FireDAC.Comp.Client,
-  Pedido.DAO.Produto,
+  Pedido.Controller.Interfaces,
+  Pedido.DAO.Interfaces,
   Pedido.Model.Produto;
 
 type
-  TProdutoController = class
+  TProdutoController = class(TInterfacedObject, IProdutoController)
   private
-    FProdutoDAO: TProdutoDAO;
+    FProdutoDAO: IProdutoDAO;
   public
-    constructor Create(AConexao: TFDConnection);
-    destructor Destroy; override;
-
-    // Levanta EProdutoNaoEncontrado se o código não existir.
-    // O objeto retornado pertence a quem chamou.
+    constructor Create(const AProdutoDAO: IProdutoDAO);
     function GetProduto(ACodigo: Integer): TProdutoModel;
   end;
 
@@ -25,16 +21,10 @@ implementation
 uses
   Pedido.Model.Excecoes;
 
-constructor TProdutoController.Create(AConexao: TFDConnection);
+constructor TProdutoController.Create(const AProdutoDAO: IProdutoDAO);
 begin
   inherited Create;
-  FProdutoDAO := TProdutoDAO.Create(AConexao);
-end;
-
-destructor TProdutoController.Destroy;
-begin
-  FProdutoDAO.Free;
-  inherited;
+  FProdutoDAO := AProdutoDAO;
 end;
 
 function TProdutoController.GetProduto(ACodigo: Integer): TProdutoModel;

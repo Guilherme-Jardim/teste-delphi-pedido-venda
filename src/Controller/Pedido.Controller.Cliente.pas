@@ -3,20 +3,16 @@
 interface
 
 uses
-  FireDAC.Comp.Client,
-  Pedido.DAO.Cliente,
+  Pedido.Controller.Interfaces,
+  Pedido.DAO.Interfaces,
   Pedido.Model.Cliente;
 
 type
-  TClienteController = class
+  TClienteController = class(TInterfacedObject, IClienteController)
   private
-    FClienteDAO: TClienteDAO;
+    FClienteDAO: IClienteDAO;
   public
-    constructor Create(AConexao: TFDConnection);
-    destructor Destroy; override;
-
-    // Levanta EClienteNaoEncontrado se o código não existir.
-    // O objeto retornado pertence a quem chamou.
+    constructor Create(const AClienteDAO: IClienteDAO);
     function GetCliente(ACodigo: Integer): TClienteModel;
   end;
 
@@ -25,16 +21,10 @@ implementation
 uses
   Pedido.Model.Excecoes;
 
-constructor TClienteController.Create(AConexao: TFDConnection);
+constructor TClienteController.Create(const AClienteDAO: IClienteDAO);
 begin
   inherited Create;
-  FClienteDAO := TClienteDAO.Create(AConexao);
-end;
-
-destructor TClienteController.Destroy;
-begin
-  FClienteDAO.Free;
-  inherited;
+  FClienteDAO := AClienteDAO;
 end;
 
 function TClienteController.GetCliente(ACodigo: Integer): TClienteModel;
