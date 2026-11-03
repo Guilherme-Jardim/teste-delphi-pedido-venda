@@ -1,0 +1,47 @@
+﻿package Componentes.Pedido;
+
+{$R *.res}
+{$R *.otares}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'Componentes visuais do Pedido de Venda'}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl;
+
+contains
+  ComponentTheme in 'Core\ComponentTheme.pas',
+  ComponentIcons in 'Core\ComponentIcons.pas',
+  ComponentUtils in 'Core\ComponentUtils.pas',
+  RoundButton in 'Buttons\RoundButton.pas',
+  FlagButton in 'Buttons\FlagButton.pas',
+  InfoCard in 'Cards\InfoCard.pas',
+  ModernEdit in 'Edits\ModernEdit.pas',
+  AlertBar in 'Alerts\AlertBar.pas',
+  ModernGrid in 'Grids\ModernGrid.pas';
+
+end.
