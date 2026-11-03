@@ -1,7 +1,11 @@
 /*
   Pedido de Venda - script do banco (Firebird 3, 4 ou 5)
 
-  1) Crie um banco vazio (ver README, secao "Banco de dados").
+  O sistema cria este mesmo banco sozinho na primeira execucao. Este script e para
+  quem prefere criar o banco a mao (e um teste confere que os dois sao iguais).
+
+  1) Crie um banco vazio, em qualquer pasta que o servidor Firebird possa gravar
+     (ver README, secao "Banco de dados: duas formas de criar").
   2) Conecte nele e rode este script:
        isql -user SYSDBA -password <senha> localhost:C:\dados\PEDIDOS.FDB -i db\db.sql
 */
