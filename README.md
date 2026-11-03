@@ -196,7 +196,7 @@ O programa procura o `config.ini` subindo pastas a partir do executável, então
 
 ## Idiomas
 
-As bandeiras no topo (Brasil à esquerda, Espanha à direita) trocam todo o texto do sistema na hora: rótulos, botões, dicas, mensagens e diálogos, inclusive os da inicialização. O português do Brasil é o padrão. A escolha fica em `%LOCALAPPDATA%\PedidoVenda\idioma.cfg`. Todos os textos estão em `src/Infra/Pedido.Infra.Idioma.pas`, lado a lado nos dois idiomas, e um teste confere que nenhuma tela fica sem tradução.
+As bandeiras no topo (Brasil à esquerda, Espanha à direita) trocam todo o texto do sistema na hora: rótulos, botões, dicas, mensagens e diálogos, inclusive os da inicialização. O português do Brasil é o padrão. A escolha fica em `%LOCALAPPDATA%\PedidoVenda\idioma.cfg`. Todos os textos estão em `src/Infrastructure/Pedido.Infra.Idioma.pas`, lado a lado nos dois idiomas, e um teste confere que nenhuma tela fica sem tradução.
 
 ## Acessibilidade
 
