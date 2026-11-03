@@ -38,9 +38,10 @@ implementation
 
 uses
   System.SysUtils,
+  Pedido.Domain.Erros,
+  Pedido.Domain.PedidoItem,
   Pedido.Infra.Idioma,
-  Pedido.Model.Excecoes,
-  Pedido.Model.PedidoItem;
+  Pedido.Presentation.TradutorErros;
 
 procedure TTestesValidacaoItem.Setup;
 begin
@@ -52,7 +53,7 @@ begin
   Assert.WillNotRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Cemento', 2, 39.9).Free;
+      TPedidoItem.Criar(1, 'Cemento', 2, 39.9).Free;
     end);
 end;
 
@@ -61,8 +62,8 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItemModel.Create(0, 'Cemento', 1, 10).Free;
-    end, EValidacao);
+      TPedidoItem.Criar(0, 'Cemento', 1, 10).Free;
+    end, EDominioErro);
 end;
 
 procedure TTestesValidacaoItem.QuantidadeNegativaEInvalida;
@@ -70,8 +71,8 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Cemento', -1, 10).Free;
-    end, EValidacao);
+      TPedidoItem.Criar(1, 'Cemento', -1, 10).Free;
+    end, EDominioErro);
 end;
 
 procedure TTestesValidacaoItem.QuantidadeAcimaDoLimiteEInvalida;
@@ -79,8 +80,8 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Cemento', 100000, 10).Free;
-    end, EValidacao);
+      TPedidoItem.Criar(1, 'Cemento', 100000, 10).Free;
+    end, EDominioErro);
 end;
 
 procedure TTestesValidacaoItem.QuantidadeNoLimiteEValida;
@@ -88,7 +89,7 @@ begin
   Assert.WillNotRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Cemento', 99999.999, 1).Free;
+      TPedidoItem.Criar(1, 'Cemento', 99999.999, 1).Free;
     end);
 end;
 
@@ -97,8 +98,8 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Cemento', 1, 10000000).Free;
-    end, EValidacao);
+      TPedidoItem.Criar(1, 'Cemento', 1, 10000000).Free;
+    end, EDominioErro);
 end;
 
 procedure TTestesValidacaoItem.ValorZeroEPermitido;
@@ -107,7 +108,7 @@ begin
   Assert.WillNotRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Brinde', 1, 0).Free;
+      TPedidoItem.Criar(1, 'Brinde', 1, 0).Free;
     end);
 end;
 
@@ -117,18 +118,18 @@ var
 begin
   DefinirIdioma(idEspanhol, False);
   try
-    TPedidoItemModel.Create(1, 'X', 0, 1).Free;
+    TPedidoItem.Criar(1, 'X', 0, 1).Free;
   except
-    on E: EValidacao do
-      MensagemEs := E.Message;
+    on E: EDominioErro do
+      MensagemEs := MensagemDoErro(E);
   end;
 
   DefinirIdioma(idPortugues, False);
   try
-    TPedidoItemModel.Create(1, 'X', 0, 1).Free;
+    TPedidoItem.Criar(1, 'X', 0, 1).Free;
   except
-    on E: EValidacao do
-      MensagemPt := E.Message;
+    on E: EDominioErro do
+      MensagemPt := MensagemDoErro(E);
   end;
 
   Assert.AreNotEqual(MensagemEs, MensagemPt);
@@ -139,16 +140,16 @@ end;
 
 procedure TTestesValidacaoItem.ClonarCopiaTodosOsCampos;
 var
-  Original, Copia: TPedidoItemModel;
+  Original, Copia: TPedidoItem;
 begin
-  Original := TPedidoItemModel.Create(7, 'Arena', 3, 8.5);
+  Original := TPedidoItem.Criar(7, 'Arena', 3, 8.5);
   try
     Copia := Original.Clonar;
     try
       Assert.AreEqual(Original.CodigoProduto, Copia.CodigoProduto);
       Assert.AreEqual(Original.Descricao, Copia.Descricao);
-      Assert.AreEqual(Original.Quantidade, Copia.Quantidade);
-      Assert.AreEqual(Original.VlrUnitario, Copia.VlrUnitario);
+      Assert.AreEqual(Original.Quantidade.Valor, Copia.Quantidade.Valor);
+      Assert.AreEqual(Original.VlrUnitario.Valor, Copia.VlrUnitario.Valor);
       Assert.AreNotSame(Original, Copia);
     finally
       Copia.Free;

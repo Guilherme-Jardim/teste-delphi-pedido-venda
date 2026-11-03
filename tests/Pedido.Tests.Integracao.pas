@@ -11,7 +11,8 @@ uses
   System.SysUtils,
   DUnitX.TestFramework,
   FireDAC.Comp.Client,
-  Pedido.Controller.Interfaces,
+  Pedido.Application.Interfaces,
+  Pedido.Domain.Erros,
   Pedido.Infra.Composicao;
 
 type
@@ -21,13 +22,11 @@ type
     FDono: TComponent;
     FConexao: TFDConnection;
     FComposicao: TComposicaoSistema;
-    FPedidos: IPedidoController;
-    FClientes: IClienteController;
-    FProdutos: IProdutoController;
+    FCasos: TCasosDeUsoPedido;
     FSemBanco: Boolean;
     function ContarPedidos: Integer;
     procedure ExigirBanco;
-    procedure DeveLevantar(AClasse: ExceptClass; const AAcao: TProc);
+    procedure DeveLevantar(ACodigo: TCodigoErro; const AAcao: TProc);
     function ContarItensDoPedido(ANumero: Integer): Integer;
   public
     [SetupFixture]
@@ -68,12 +67,11 @@ implementation
 uses
   Pedido.Infra.Config,
   Pedido.Infra.Conexao,
-  Pedido.Infra.Idioma,
-  Pedido.Model.Cliente,
-  Pedido.Model.Excecoes,
-  Pedido.Model.Pedido,
-  Pedido.Model.PedidoItem,
-  Pedido.Model.Produto;
+  Pedido.Domain.Cliente,
+  Pedido.Domain.Pedido,
+  Pedido.Domain.PedidoItem,
+  Pedido.Domain.Produto,
+  Pedido.Infra.Idioma;
 
 procedure TTestesIntegracao.SetupFixture;
 var
@@ -99,16 +97,12 @@ begin
     end;
   end;
   FComposicao := TComposicaoSistema.Create(FConexao);
-  FPedidos := FComposicao.Pedidos;
-  FClientes := FComposicao.Clientes;
-  FProdutos := FComposicao.Produtos;
+  FCasos := FComposicao.CasosDeUso;
 end;
 
 procedure TTestesIntegracao.TearDownFixture;
 begin
-  FProdutos := nil;
-  FClientes := nil;
-  FPedidos := nil;
+  FCasos := Default(TCasosDeUsoPedido);
   FComposicao.Free;
   FDono.Free;
 end;
@@ -120,19 +114,24 @@ begin
     Assert.Pass('Sem banco disponível: teste de integração ignorado.');
 end;
 
-procedure TTestesIntegracao.DeveLevantar(AClasse: ExceptClass; const AAcao: TProc);
+procedure TTestesIntegracao.DeveLevantar(ACodigo: TCodigoErro; const AAcao: TProc);
 begin
   try
     AAcao();
   except
+    on E: EDominioErro do
+    begin
+      Assert.AreEqual(Ord(ACodigo), Ord(E.Codigo),
+        Format('Esperava o erro %s, mas veio %s', [NomeDoCodigo(ACodigo), NomeDoCodigo(E.Codigo)]));
+      Exit;
+    end;
     on E: Exception do
     begin
-      Assert.IsTrue(E is AClasse,
-        Format('Esperava %s, mas veio %s: %s', [AClasse.ClassName, E.ClassName, E.Message]));
+      Assert.Fail(Format('Esperava um erro de domínio, mas veio %s: %s', [E.ClassName, E.Message]));
       Exit;
     end;
   end;
-  Assert.Fail('Esperava a exceção ' + AClasse.ClassName);
+  Assert.Fail('Esperava o erro ' + NomeDoCodigo(ACodigo));
 end;
 
 function TTestesIntegracao.ContarPedidos: Integer;
@@ -148,10 +147,10 @@ end;
 
 procedure TTestesIntegracao.ClienteExistenteERetornadoComDados;
 var
-  Cliente: TClienteModel;
+  Cliente: TCliente;
 begin
   ExigirBanco;
-  Cliente := FClientes.GetCliente(1);
+  Cliente := FCasos.ConsultarCliente.Executar(1);
   try
     Assert.AreEqual(1, Cliente.Codigo);
     Assert.IsNotEmpty(Cliente.Nome);
@@ -165,22 +164,22 @@ end;
 procedure TTestesIntegracao.ClienteInexistenteLevantaErro;
 begin
   ExigirBanco;
-  DeveLevantar(EClienteNaoEncontrado,
+  DeveLevantar(ceClienteNaoEncontrado,
     procedure
     begin
-      FClientes.GetCliente(987654).Free;
+      FCasos.ConsultarCliente.Executar(987654).Free;
     end);
 end;
 
 procedure TTestesIntegracao.ProdutoExistenteTemDescricaoEPreco;
 var
-  Produto: TProdutoModel;
+  Produto: TProduto;
 begin
   ExigirBanco;
-  Produto := FProdutos.GetProduto(1);
+  Produto := FCasos.ConsultarProduto.Executar(1);
   try
     Assert.IsNotEmpty(Produto.Descricao);
-    Assert.IsTrue(Produto.PrecoVenda > 0);
+    Assert.IsTrue(Produto.PrecoVenda.Valor > 0);
   finally
     Produto.Free;
   end;
@@ -189,41 +188,41 @@ end;
 procedure TTestesIntegracao.ProdutoInexistenteLevantaErro;
 begin
   ExigirBanco;
-  DeveLevantar(EProdutoNaoEncontrado,
+  DeveLevantar(ceProdutoNaoEncontrado,
     procedure
     begin
-      FProdutos.GetProduto(987654).Free;
+      FCasos.ConsultarProduto.Executar(987654).Free;
     end);
 end;
 
 procedure TTestesIntegracao.GravarPedidoPersisteCabecalhoItensEObservacao;
 var
-  Pedido, Carregado: TPedidoModel;
+  Pedido, Carregado: TPedido;
   Numero: Integer;
 begin
   ExigirBanco;
-  Pedido := TPedidoModel.Create;
+  Pedido := TPedido.Create;
   try
-    Pedido.CodigoCliente := 1;
-    Pedido.Observacao := 'Teste automático: entrega pela manhã';
-    Pedido.AdicionarItem(FPedidos.CriarItem(1, 2, 39.9));
-    Pedido.AdicionarItem(FPedidos.CriarItem(1, 1, 39.9)); // produto repetido em outra linha
-    Pedido.AdicionarItem(FPedidos.CriarItem(3, 10, 1.25));
-    FPedidos.Gravar(Pedido);
+    Pedido.InformarCliente(1);
+    Pedido.DefinirObservacao('Teste automático: entrega pela manhã');
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(1, 2, 39.9));
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(1, 1, 39.9)); // produto repetido em outra linha
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(3, 10, 1.25));
+    FCasos.Gravar.Executar(Pedido);
     Numero := Pedido.Numero;
     Assert.IsTrue(Numero > 0);
 
-    Carregado := FPedidos.GetPedido(Numero);
+    Carregado := FCasos.Carregar.Executar(Numero);
     try
       Assert.AreEqual(1, Carregado.CodigoCliente);
       Assert.AreEqual(Pedido.Observacao, Carregado.Observacao);
       Assert.AreEqual(3, Carregado.Itens.Count);
-      Assert.AreEqual(Currency(132.2), Carregado.ValorTotal);
-      Assert.AreEqual(Pedido.ValorTotal, Carregado.ValorTotal);
+      Assert.AreEqual(Currency(132.2), Carregado.ValorTotal.Valor);
+      Assert.AreEqual(Pedido.ValorTotal.Valor, Carregado.ValorTotal.Valor);
     finally
       Carregado.Free;
     end;
-    FPedidos.Cancelar(Numero);
+    FCasos.Cancelar.Executar(Numero);
   finally
     Pedido.Free;
   end;
@@ -231,21 +230,21 @@ end;
 
 procedure TTestesIntegracao.NumeroDoPedidoECrescente;
 var
-  P1, P2: TPedidoModel;
+  P1, P2: TPedido;
 begin
   ExigirBanco;
-  P1 := TPedidoModel.Create;
-  P2 := TPedidoModel.Create;
+  P1 := TPedido.Create;
+  P2 := TPedido.Create;
   try
-    P1.CodigoCliente := 1;
-    P1.AdicionarItem(FPedidos.CriarItem(2, 1, 8.5));
-    P2.CodigoCliente := 2;
-    P2.AdicionarItem(FPedidos.CriarItem(2, 1, 8.5));
-    FPedidos.Gravar(P1);
-    FPedidos.Gravar(P2);
+    P1.InformarCliente(1);
+    P1.AdicionarItem(FCasos.CriarItem.Executar(2, 1, 8.5));
+    P2.InformarCliente(2);
+    P2.AdicionarItem(FCasos.CriarItem.Executar(2, 1, 8.5));
+    FCasos.Gravar.Executar(P1);
+    FCasos.Gravar.Executar(P2);
     Assert.IsTrue(P2.Numero > P1.Numero);
-    FPedidos.Cancelar(P1.Numero);
-    FPedidos.Cancelar(P2.Numero);
+    FCasos.Cancelar.Executar(P1.Numero);
+    FCasos.Cancelar.Executar(P2.Numero);
   finally
     P1.Free;
     P2.Free;
@@ -254,18 +253,18 @@ end;
 
 procedure TTestesIntegracao.GravarPedidoSemClienteNaoGrava;
 var
-  Pedido: TPedidoModel;
+  Pedido: TPedido;
   Antes: Integer;
 begin
   ExigirBanco;
   Antes := ContarPedidos;
-  Pedido := TPedidoModel.Create;
+  Pedido := TPedido.Create;
   try
-    Pedido.AdicionarItem(FPedidos.CriarItem(1, 1, 10));
-    DeveLevantar(EValidacao,
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(1, 1, 10));
+    DeveLevantar(ceSemCliente,
       procedure
       begin
-        FPedidos.Gravar(Pedido);
+        FCasos.Gravar.Executar(Pedido);
       end);
     Assert.AreEqual(Antes, ContarPedidos);
   finally
@@ -275,19 +274,19 @@ end;
 
 procedure TTestesIntegracao.GravarPedidoComClienteInexistenteNaoGrava;
 var
-  Pedido: TPedidoModel;
+  Pedido: TPedido;
   Antes: Integer;
 begin
   ExigirBanco;
   Antes := ContarPedidos;
-  Pedido := TPedidoModel.Create;
+  Pedido := TPedido.Create;
   try
-    Pedido.CodigoCliente := 987654;
-    Pedido.AdicionarItem(FPedidos.CriarItem(1, 1, 10));
-    DeveLevantar(EClienteNaoEncontrado,
+    Pedido.InformarCliente(987654);
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(1, 1, 10));
+    DeveLevantar(ceClienteNaoEncontrado,
       procedure
       begin
-        FPedidos.Gravar(Pedido);
+        FCasos.Gravar.Executar(Pedido);
       end);
     Assert.AreEqual(Antes, ContarPedidos);
   finally
@@ -297,22 +296,22 @@ end;
 
 procedure TTestesIntegracao.FalhaNoMeioDaGravacaoFazRollbackDeTudo;
 var
-  Pedido: TPedidoModel;
+  Pedido: TPedido;
   Antes: Integer;
 begin
   ExigirBanco;
   // O segundo item aponta para um produto que não existe: a FK recusa o insert
   // dos itens depois de o cabeçalho já ter sido inserido. Nada pode sobrar.
   Antes := ContarPedidos;
-  Pedido := TPedidoModel.Create;
+  Pedido := TPedido.Create;
   try
-    Pedido.CodigoCliente := 1;
-    Pedido.AdicionarItem(TPedidoItemModel.Create(1, 'Cemento', 1, 39.9));
-    Pedido.AdicionarItem(TPedidoItemModel.Create(987654, 'Fantasma', 1, 10));
-    DeveLevantar(EPersistencia,
+    Pedido.InformarCliente(1);
+    Pedido.AdicionarItem(TPedidoItem.Criar(1, 'Cemento', 1, 39.9));
+    Pedido.AdicionarItem(TPedidoItem.Criar(987654, 'Fantasma', 1, 10));
+    DeveLevantar(ceFalhaAoGravar,
       procedure
       begin
-        FPedidos.Gravar(Pedido);
+        FCasos.Gravar.Executar(Pedido);
       end);
     Assert.AreEqual(Antes, ContarPedidos, 'O cabeçalho não deveria ter sido gravado');
     Assert.AreEqual(0, Pedido.Numero, 'O número deve voltar ao estado anterior');
@@ -324,34 +323,34 @@ end;
 
 procedure TTestesIntegracao.RegravarPedidoCarregadoAtualizaSemCriarOutro;
 var
-  Pedido, Recarregado: TPedidoModel;
+  Pedido, Recarregado: TPedido;
   Numero, Antes: Integer;
 begin
   ExigirBanco;
-  Pedido := TPedidoModel.Create;
+  Pedido := TPedido.Create;
   try
-    Pedido.CodigoCliente := 1;
-    Pedido.AdicionarItem(FPedidos.CriarItem(1, 1, 39.9));
-    FPedidos.Gravar(Pedido);
+    Pedido.InformarCliente(1);
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(1, 1, 39.9));
+    FCasos.Gravar.Executar(Pedido);
     Numero := Pedido.Numero;
     Antes := ContarPedidos;
 
-    Pedido.Observacao := 'Alterado';
-    Pedido.AdicionarItem(FPedidos.CriarItem(2, 4, 8.5));
+    Pedido.DefinirObservacao('Alterado');
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(2, 4, 8.5));
     Pedido.RemoverItem(0);
-    FPedidos.Gravar(Pedido);
+    FCasos.Gravar.Executar(Pedido);
 
     Assert.AreEqual(Numero, Pedido.Numero);
     Assert.AreEqual(Antes, ContarPedidos);
     Assert.AreEqual(1, ContarItensDoPedido(Numero));
-    Recarregado := FPedidos.GetPedido(Numero);
+    Recarregado := FCasos.Carregar.Executar(Numero);
     try
       Assert.AreEqual('Alterado', Recarregado.Observacao);
-      Assert.AreEqual(Currency(34), Recarregado.ValorTotal);
+      Assert.AreEqual(Currency(34), Recarregado.ValorTotal.Valor);
     finally
       Recarregado.Free;
     end;
-    FPedidos.Cancelar(Numero);
+    FCasos.Cancelar.Executar(Numero);
   finally
     Pedido.Free;
   end;
@@ -359,26 +358,26 @@ end;
 
 procedure TTestesIntegracao.CancelarPedidoRemoveCabecalhoEItens;
 var
-  Pedido: TPedidoModel;
+  Pedido: TPedido;
   Numero: Integer;
 begin
   ExigirBanco;
-  Pedido := TPedidoModel.Create;
+  Pedido := TPedido.Create;
   try
-    Pedido.CodigoCliente := 1;
-    Pedido.AdicionarItem(FPedidos.CriarItem(1, 1, 39.9));
-    Pedido.AdicionarItem(FPedidos.CriarItem(2, 2, 8.5));
-    FPedidos.Gravar(Pedido);
+    Pedido.InformarCliente(1);
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(1, 1, 39.9));
+    Pedido.AdicionarItem(FCasos.CriarItem.Executar(2, 2, 8.5));
+    FCasos.Gravar.Executar(Pedido);
     Numero := Pedido.Numero;
     Assert.AreEqual(2, ContarItensDoPedido(Numero));
 
-    FPedidos.Cancelar(Numero);
+    FCasos.Cancelar.Executar(Numero);
 
     Assert.AreEqual(0, ContarItensDoPedido(Numero));
-    DeveLevantar(EPedidoNaoEncontrado,
+    DeveLevantar(cePedidoNaoEncontrado,
       procedure
       begin
-        FPedidos.GetPedido(Numero).Free;
+        FCasos.Carregar.Executar(Numero).Free;
       end);
   finally
     Pedido.Free;
@@ -388,10 +387,10 @@ end;
 procedure TTestesIntegracao.CancelarPedidoInexistenteLevantaErro;
 begin
   ExigirBanco;
-  DeveLevantar(EPedidoNaoEncontrado,
+  DeveLevantar(cePedidoNaoEncontrado,
     procedure
     begin
-      FPedidos.Cancelar(987654);
+      FCasos.Cancelar.Executar(987654);
     end);
 end;
 

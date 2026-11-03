@@ -2,7 +2,7 @@
 
 { Duas proteções contra "deriva" do projeto:
   1) o esquema embutido no executável continua igual ao db/db.sql;
-  2) os DAOs continuam sem concatenar texto em SQL (injeção de SQL).
+  2) os repositórios continuam sem concatenar texto em SQL (injeção de SQL).
   Também confere o registro dos bancos já criados. }
 
 interface
@@ -36,13 +36,13 @@ type
   [TestFixture]
   TTestesSeguranca = class
   private
-    function ArquivosDoDAO: TArray<string>;
+    function ArquivosDosRepositorios: TArray<string>;
     function LerArquivo(const ACaminho: string): string;
   public
     [Test]
-    procedure DAOsTemArquivosParaVarrer;
+    procedure RepositoriosTemArquivosParaVarrer;
     [Test]
-    procedure DAOsNaoMontamSqlComTextoVariavel;
+    procedure RepositoriosNaoMontamSqlComTextoVariavel;
     [Test]
     procedure TodaQueryNasceDeUmaConstanteSql;
     [Test]
@@ -208,29 +208,29 @@ begin
   Result := TFile.ReadAllText(ACaminho, TEncoding.UTF8);
 end;
 
-function TTestesSeguranca.ArquivosDoDAO: TArray<string>;
+function TTestesSeguranca.ArquivosDosRepositorios: TArray<string>;
 var
   Pasta: string;
 begin
-  Pasta := ProcurarArquivo('src\DAO');
-  Assert.IsNotEmpty(Pasta, 'Pasta src\DAO não encontrada');
+  Pasta := ProcurarArquivo('src\Infrastructure\Persistence');
+  Assert.IsNotEmpty(Pasta, 'Pasta src\Infrastructure\Persistence não encontrada');
   Result := TDirectory.GetFiles(Pasta, '*.pas');
 end;
 
-procedure TTestesSeguranca.DAOsTemArquivosParaVarrer;
+procedure TTestesSeguranca.RepositoriosTemArquivosParaVarrer;
 begin
-  Assert.IsTrue(Length(ArquivosDoDAO) >= 5);
+  Assert.IsTrue(Length(ArquivosDosRepositorios) >= 4);
 end;
 
-procedure TTestesSeguranca.DAOsNaoMontamSqlComTextoVariavel;
+procedure TTestesSeguranca.RepositoriosNaoMontamSqlComTextoVariavel;
 var
   Arquivo, Texto: string;
 begin
-  for Arquivo in ArquivosDoDAO do
+  for Arquivo in ArquivosDosRepositorios do
   begin
     Texto := LerArquivo(Arquivo);
     Assert.IsFalse(TRegEx.IsMatch(Texto, '\.SQL\.(Add|Text)\s*(\(|:=)', [roIgnoreCase]) and
-      not Arquivo.EndsWith('Pedido.DAO.Base.pas'), 'SQL montado fora da base em ' + Arquivo);
+      not Arquivo.EndsWith('Pedido.Infra.Persistencia.Base.pas'), 'SQL montado fora da base em ' + Arquivo);
     Assert.IsFalse(TRegEx.IsMatch(Texto, 'Format\s*\(\s*''\s*(SELECT|INSERT|UPDATE|DELETE)', [roIgnoreCase]),
       'Format com SQL em ' + Arquivo);
     Assert.IsFalse(TRegEx.IsMatch(Texto, '(SELECT|INSERT|UPDATE|DELETE)[^'';]*''\s*\+\s*[A-Za-z_]+\s*\+', [roIgnoreCase]) and
@@ -244,9 +244,9 @@ var
   Arquivo, Texto: string;
   Combinacao: TMatch;
 begin
-  for Arquivo in ArquivosDoDAO do
+  for Arquivo in ArquivosDosRepositorios do
   begin
-    if Arquivo.EndsWith('Pedido.DAO.Base.pas') then
+    if Arquivo.EndsWith('Pedido.Infra.Persistencia.Base.pas') then
       Continue;
     Texto := LerArquivo(Arquivo);
     for Combinacao in TRegEx.Matches(Texto, 'NovaQuery\(([^)]*)\)') do
@@ -260,7 +260,7 @@ var
   Arquivo, Texto, Bloco, Linha: string;
   Combinacao: TMatch;
 begin
-  for Arquivo in ArquivosDoDAO do
+  for Arquivo in ArquivosDosRepositorios do
   begin
     Texto := LerArquivo(Arquivo);
     // Cada "SQL_XXX = ... ;" deve conter só literais entre aspas unidos por "+".
@@ -280,7 +280,7 @@ var
   Arquivo, Texto: string;
 begin
   // Todo parâmetro SQL (":NOME") é preenchido com ParamByName: nunca por texto.
-  for Arquivo in ArquivosDoDAO do
+  for Arquivo in ArquivosDosRepositorios do
   begin
     Texto := LerArquivo(Arquivo);
     if TRegEx.IsMatch(Texto, ':[A-Z_]+', []) then
@@ -293,7 +293,7 @@ var
   Caminho, Texto: string;
 begin
   // O log só recebe a mensagem da exceção; o código-fonte do log não pode citar Password.
-  Caminho := ProcurarArquivo('src\Infra\Pedido.Infra.Log.pas');
+  Caminho := ProcurarArquivo('src\Infrastructure\Pedido.Infra.Log.pas');
   Assert.IsNotEmpty(Caminho);
   Texto := LerArquivo(Caminho);
   Assert.IsFalse(TRegEx.IsMatch(Texto, 'password|senha', [roIgnoreCase]) and

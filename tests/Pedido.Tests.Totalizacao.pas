@@ -6,13 +6,13 @@ interface
 
 uses
   DUnitX.TestFramework,
-  Pedido.Model.Pedido;
+  Pedido.Domain.Pedido;
 
 type
   [TestFixture]
   TTestesTotalizacao = class
   private
-    FPedido: TPedidoModel;
+    FPedido: TPedido;
     procedure AdicionarItem(ACodigo: Integer; AQuantidade: Double; AValor: Currency);
   public
     [Setup]
@@ -48,12 +48,12 @@ implementation
 
 uses
   System.SysUtils,
-  Pedido.Model.Excecoes,
-  Pedido.Model.PedidoItem;
+  Pedido.Domain.Erros,
+  Pedido.Domain.PedidoItem;
 
 procedure TTestesTotalizacao.Setup;
 begin
-  FPedido := TPedidoModel.Create;
+  FPedido := TPedido.Create;
 end;
 
 procedure TTestesTotalizacao.TearDown;
@@ -64,19 +64,19 @@ end;
 procedure TTestesTotalizacao.AdicionarItem(ACodigo: Integer; AQuantidade: Double;
   AValor: Currency);
 begin
-  FPedido.AdicionarItem(TPedidoItemModel.Create(ACodigo, 'Produto ' + IntToStr(ACodigo),
+  FPedido.AdicionarItem(TPedidoItem.Criar(ACodigo, 'Produto ' + IntToStr(ACodigo),
     AQuantidade, AValor));
 end;
 
 procedure TTestesTotalizacao.PedidoSemItensTemTotalZero;
 begin
-  Assert.AreEqual(Currency(0), FPedido.ValorTotal);
+  Assert.AreEqual(Currency(0), FPedido.ValorTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.TotalDoItemEQuantidadeVezesValor;
 begin
   AdicionarItem(1, 3, 10.5);
-  Assert.AreEqual(Currency(31.5), FPedido.Itens[0].VlrTotal);
+  Assert.AreEqual(Currency(31.5), FPedido.Itens[0].VlrTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.TotalDoPedidoESomaDosItens;
@@ -85,7 +85,7 @@ begin
   AdicionarItem(2, 10, 8.5);
   AdicionarItem(3, 1, 289);
   // 79,80 + 85,00 + 289,00
-  Assert.AreEqual(Currency(453.8), FPedido.ValorTotal);
+  Assert.AreEqual(Currency(453.8), FPedido.ValorTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.ProdutosRepetidosFicamEmLinhasDistintas;
@@ -93,14 +93,14 @@ begin
   AdicionarItem(1, 1, 39.9);
   AdicionarItem(1, 2, 39.9);
   Assert.AreEqual(2, FPedido.Itens.Count);
-  Assert.AreEqual(Currency(119.7), FPedido.ValorTotal);
+  Assert.AreEqual(Currency(119.7), FPedido.ValorTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.TotalArredondaEmCentavos;
 begin
   // 3 x 0,333 = 0,999 -> 1,00
   AdicionarItem(1, 3, 0.333);
-  Assert.AreEqual(Currency(1), FPedido.Itens[0].VlrTotal);
+  Assert.AreEqual(Currency(1), FPedido.Itens[0].VlrTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.ExcluirItemRecalculaOTotal;
@@ -108,12 +108,12 @@ begin
   AdicionarItem(1, 2, 39.9);
   AdicionarItem(2, 10, 8.5);
   AdicionarItem(3, 1, 289);
-  Assert.AreEqual(Currency(453.8), FPedido.ValorTotal);
+  Assert.AreEqual(Currency(453.8), FPedido.ValorTotal.Valor);
 
   FPedido.RemoverItem(1);
 
   Assert.AreEqual(2, FPedido.Itens.Count);
-  Assert.AreEqual(Currency(368.8), FPedido.ValorTotal);
+  Assert.AreEqual(Currency(368.8), FPedido.ValorTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.ExcluirTodosOsItensZeraOTotal;
@@ -122,15 +122,15 @@ begin
   AdicionarItem(2, 1, 8.5);
   FPedido.RemoverItem(0);
   FPedido.RemoverItem(0);
-  Assert.AreEqual(Currency(0), FPedido.ValorTotal);
+  Assert.AreEqual(Currency(0), FPedido.ValorTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.AtualizarItemRecalculaOTotal;
 begin
   AdicionarItem(1, 2, 10);
   AdicionarItem(2, 1, 5);
-  FPedido.AtualizarItem(0, TPedidoItemModel.Create(1, 'Produto 1', 4, 10));
-  Assert.AreEqual(Currency(45), FPedido.ValorTotal);
+  FPedido.AtualizarItem(0, TPedidoItem.Criar(1, 'Produto 1', 4, 10));
+  Assert.AreEqual(Currency(45), FPedido.ValorTotal.Valor);
 end;
 
 procedure TTestesTotalizacao.QuantidadeZeroEInvalida;
@@ -138,9 +138,9 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Produto 1', 0, 10).Free;
+      TPedidoItem.Criar(1, 'Produto 1', 0, 10).Free;
     end,
-    EValidacao);
+    EDominioErro);
 end;
 
 procedure TTestesTotalizacao.ValorNegativoEInvalido;
@@ -148,9 +148,9 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      TPedidoItemModel.Create(1, 'Produto 1', 1, -1).Free;
+      TPedidoItem.Criar(1, 'Produto 1', 1, -1).Free;
     end,
-    EValidacao);
+    EDominioErro);
 end;
 
 procedure TTestesTotalizacao.ExcluirIndiceInvalidoGeraErro;
@@ -160,7 +160,7 @@ begin
     begin
       FPedido.RemoverItem(3);
     end,
-    EValidacao);
+    EDominioErro);
 end;
 
 initialization
