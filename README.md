@@ -4,6 +4,8 @@ Tela de Pedido de Venda feita em Delphi (VCL), com persistência em Firebird via
 
 Na primeira vez que abre, o próprio executável configura a conexão e **cria o banco de dados**. Quem prefere pode criar o banco à mão com o `db.sql`: os dois caminhos funcionam e dão no mesmo banco.
 
+> **Esta é a versão avançada (branch `clean-ddd`, tag `v1.3.0`):** Clean Architecture e DDD. A versão principal do teste, com `Model`, `DAO` e `Controller`, está na branch [`main`](https://github.com/Guilherme-Jardim/teste-delphi-pedido-venda/tree/main) (tag `v2.0.0`). As duas têm as mesmas funcionalidades.
+
 ## O que o sistema faz
 
 **Pedido de venda (requisitos do teste)**
