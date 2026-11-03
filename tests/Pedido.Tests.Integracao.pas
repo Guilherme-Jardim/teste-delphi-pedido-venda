@@ -76,11 +76,18 @@ uses
   Pedido.Model.Produto;
 
 procedure TTestesIntegracao.SetupFixture;
+var
+  Repo: IConfigRepositorio;
+  Config: TConfigBanco;
+  Motivo: string;
 begin
   DefinirIdioma(idEspanhol, False);
   FDono := TComponent.Create(nil);
   try
-    FConexao := TFabricaConexao.Criar(TConfigLoader.Carregar, FDono);
+    Repo := TIniConfigRepositorio.Create;
+    if Repo.Carregar(Config, Motivo) <> rcOk then
+      raise Exception.Create('config.ini indisponível: ' + Motivo);
+    FConexao := TFabricaConexao.Criar(Config, FDono);
     FConexao.Connected := True;
   except
     on E: Exception do
