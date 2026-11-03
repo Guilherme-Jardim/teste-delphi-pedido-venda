@@ -194,6 +194,8 @@ begin
      Tr('grade.total')],
     [120, 400, 120, 140, 140]);
   gridItens.Hint := Tr('hint.grade');
+  gridItens.NomeAcessivel := Tr('grade.titulo');
+  gridItens.TextoLinha := Tr('a11y.linha');
   gridItens.ShowHint := True;
 
   btnNovo.Caption := Tr('btn.novo');
@@ -573,7 +575,7 @@ begin
   if (FPedido.Itens.Count = 0) or (Indice < 0) or (Indice >= FPedido.Itens.Count) then
     Exit;
 
-  if not ConfirmarAcao(Tr('msg.confirmar_excluir_item', [FPedido.Itens[Indice].Descricao])) then
+  if not ConfirmarAcao(Tr('msg.confirmar_excluir_item', [FPedido.Itens[Indice].Descricao]), True) then
     Exit;
 
   FPedido.RemoverItem(Indice);
@@ -637,7 +639,7 @@ begin
     if not PedirNumeroPedido(Tr('dlg.numero_cancelar'), Numero) then
       Exit;
 
-  if not ConfirmarAcao(Tr('msg.confirmar_cancelar', [Numero])) then
+  if not ConfirmarAcao(Tr('msg.confirmar_cancelar', [Numero]), True) then
     Exit;
 
   try
