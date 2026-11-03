@@ -35,11 +35,12 @@ Componentes/Componentes Pedido/     pacote de componentes visuais (Componentes.P
   Buttons/ Cards/ Edits/            RoundButton, FlagButton, InfoCard, ModernEdit
   Alerts/ Grids/                    AlertBar, ModernGrid
 src/
-  Model/                            entidades e exceções de negócio
-  DAO/                              acesso a dados (interfaces + FireDAC): todo o SQL fica aqui
-  Controller/                       regras de negócio (interfaces + implementação)
-  View/                             telas: o visual está no .dfm, o .pas só tem eventos
-  Infra/                            config.ini, conexão, esquema do banco, inicialização, idiomas, log
+  Domain/                           núcleo do negócio: entidades, objetos de valor, agregado, erros,
+                                    eventos e contratos dos repositórios (não depende de nada)
+  Application/                      casos de uso (um por ação) e publicador de eventos
+  Infrastructure/                   config.ini, conexão, esquema do banco, inicialização, idiomas, log
+    Persistence/                    repositórios FireDAC: todo o SQL fica aqui
+  Presentation/                     telas: o visual está no .dfm, o .pas só tem eventos
   Recursos/                         ícone do executável
 db/db.sql                           DDL completo + carga de teste (criação manual)
 db/migracoes/                       alterações para bancos já criados
@@ -49,7 +50,30 @@ config.ini.example                  modelo do arquivo de configuração
 CHANGELOG.md                        histórico de versões
 ```
 
-O fluxo é **View → Controller → DAO**. A tela nunca fala com o banco, o controller não tem SQL e o DAO não tem regra de negócio. O total do pedido vive no Model (`TPedidoModel.ValorTotal`) e é recalculado a cada leitura, então não existe valor guardado que possa ficar velho depois de excluir ou editar um item.
+O projeto segue **Clean Architecture** com **DDD** (desenho orientado ao domínio) e **SOLID**. As dependências apontam sempre para dentro:
+
+```
+Presentation ──▶ Application ──▶ Domain ◀── Infrastructure
+ (telas)         (casos de uso)  (regras)    (FireDAC, INI, log)
+```
+
+- **Domain** não conhece banco, tela nem idioma. É onde vivem as regras: `TPedido` (raiz do agregado), `TPedidoItem`, `TCliente`, `TProduto`, os objetos de valor `TQuantidade` e `TDinheiro`, os erros de negócio (`EDominioErro` com um código), os eventos e as interfaces dos repositórios (`IClienteRepository`, `IProdutoRepository`, `IPedidoRepository`).
+- **Application** tem um caso de uso por ação da pessoa: consultar cliente, consultar produto, criar item, gravar, carregar e cancelar pedido. Cada um recebe suas dependências pelo construtor.
+- **Infrastructure** implementa as interfaces do domínio com FireDAC (`Persistence/`) e cuida do que é técnico: `config.ini`, criação do banco, log e textos por idioma. A raiz de composição (`Pedido.Infra.Composicao`) é quem liga tudo.
+- **Presentation** só chama casos de uso. Os erros chegam com um código e a tela os traduz para o idioma escolhido (`Pedido.Presentation.TradutorErros`).
+
+### Glossário DDD
+
+| Conceito | No projeto |
+|---|---|
+| Agregado e raiz | `TPedido` guarda os itens. Tudo que muda itens ou total passa por ele, e ele garante as regras (cliente e ao menos um item para gravar, índice de item válido, observação até 200 caracteres). |
+| Entidade | `TPedido` (identificado pelo número), `TPedidoItem`, `TCliente`, `TProduto`. |
+| Objeto de valor | `TQuantidade` (maior que zero, até 99.999,999) e `TDinheiro` (duas casas, limites do banco). São imutáveis e só existem válidos. |
+| Repositório | Interfaces no domínio; implementação FireDAC na infraestrutura, com transação por pedido. |
+| Evento de domínio | `PedidoGravado` e `PedidoCancelado`, publicados pelos casos de uso. Um assinante da infraestrutura registra cada um no log. |
+| Linguagem ubíqua | Nomes em português do negócio: pedido, item, cliente, produto, gravar, cancelar, quantidade, valor unitário. |
+
+O total do pedido é `TPedido.ValorTotal`, recalculado a cada leitura, então não existe valor guardado que possa ficar velho depois de excluir ou editar um item.
 
 ### SOLID
 
@@ -57,9 +81,9 @@ O fluxo é **View → Controller → DAO**. A tela nunca fala com o banco, o con
 |---|---|
 | Responsabilidade única | Cada unit tem um assunto: `Validacao` valida, `Config` lê e grava o INI, `EsquemaBanco` guarda o DDL, `RegistroBanco` lembra quais bancos já foram criados, `Inicializador` decide o que fazer em cada situação. |
 | Aberto/fechado | Novos textos entram na tabela de idiomas e novos estados do banco no `Inicializador` sem mexer nas telas. |
-| Substituição de Liskov | Qualquer implementação de `IClienteDAO`, `IProdutoDAO` e `IPedidoDAO` (FireDAC ou falsa, nos testes) serve para os controllers. |
+| Substituição de Liskov | Qualquer implementação de `IClienteRepository`, `IProdutoRepository` e `IPedidoRepository` (FireDAC ou falsa, nos testes) serve para os casos de uso. |
 | Segregação de interfaces | Interfaces pequenas: `IInspetorBanco` (só diagnostica), `ICriadorBanco` (só cria), `IRegistroBanco`, `IConfigRepositorio`, `IInteracaoInicializacao`. |
-| Inversão de dependência | Controllers e inicializador recebem interfaces pelo construtor. A raiz de composição (`Pedido.Infra.Composicao`) e o `.dpr` são os únicos lugares que escolhem as classes concretas. |
+| Inversão de dependência | Casos de uso e inicializador recebem interfaces pelo construtor. A raiz de composição (`Pedido.Infra.Composicao`) e o `.dpr` são os únicos lugares que escolhem as classes concretas. |
 
 ## Requisitos
 
@@ -185,7 +209,7 @@ As bandeiras no topo (Brasil à esquerda, Espanha à direita) trocam todo o text
 
 ## Segurança
 
-- Todo SQL é parametrizado e fica só nos DAOs. Um teste varre os DAOs e falha se algum SQL for montado com texto variável.
+- Todo SQL é parametrizado e fica só nos repositórios de `Infrastructure/Persistence`. Um teste varre esses arquivos e falha se algum SQL for montado com texto variável.
 - O que vem de fora (servidor, porta, caminho do banco, usuário, senha, biblioteca) é validado: aspas, `;`, `..`, `|`, `*`, caracteres de controle e tamanhos absurdos são recusados. A senha nunca vira SQL.
 - A criação do banco usa os parâmetros de conexão do FireDAC; o caminho do arquivo nunca é colado em comando SQL.
 - O `config.ini` é gravado de forma atômica (arquivo temporário e troca) e o arquivo antigo é copiado antes de ser substituído.
@@ -227,18 +251,20 @@ As bandeiras no topo (Brasil à esquerda, Espanha à direita) trocam todo o text
 
 ## Testes automatizados (DUnitX)
 
-Abra `tests/PedidoVenda.Tests.dpr`, compile e execute (ou rode o `PedidoVenda.Tests.exe` no terminal). São 219 testes:
+Abra `tests/PedidoVenda.Tests.dpr`, compile e execute (ou rode o `PedidoVenda.Tests.exe` no terminal). São 259 testes:
 
 | Grupo | O que confere | Precisa de banco |
 |---|---|---|
 | Totalização | soma dos itens, produtos repetidos, arredondamento, recálculo ao excluir | não |
 | Validação do item | limites de quantidade e valor, código inválido, mensagens por idioma | não |
 | Idioma e versão | português padrão, troca para espanhol, tradução completa, leitura de versão | não |
-| Controller | regras do pedido, com DAOs falsos | não |
+| Domínio | objetos de valor, invariantes do agregado `TPedido`, erros com código | não |
+| Eventos | eventos de domínio e publicador em memória (inclusive assinante com defeito) | não |
+| Casos de uso | regras da aplicação, com repositórios falsos e conferência dos eventos | não |
 | Validação das entradas | caminhos, servidores, portas, usuários e senhas, incluindo tentativas de injeção | não |
 | Configuração (INI) | arquivo ausente, válido, corrompido, campos inválidos, gravação atômica, cópia de segurança | não |
 | Inicializador | todos os cenários de inicialização, com peças falsas, inclusive o limite contra laço infinito | não |
-| Esquema, segurança e registro | `db.sql` igual ao esquema embutido; DAOs sem SQL montado; registro de bancos criados | não |
+| Esquema, segurança e registro | `db.sql` igual ao esquema embutido; repositórios sem SQL montado; registro de bancos criados | não |
 | Integração com o pedido | gravar, carregar, cancelar, número crescente, rollback, FK | sim |
 | Banco de verdade | criar banco novo, pasta inexistente, estrutura idempotente, banco vazio, banco de outro sistema, migração de `OBSERVACAO`, servidor fora do ar, senha errada, biblioteca ausente ou com bits errados, fluxo completo de primeira execução | sim |
 
