@@ -18,6 +18,7 @@ uses
   Vcl.Forms,
   Vcl.StdCtrls,
   Vcl.Grids,
+  ComponentAccess,
   ComponentIcons,
   ComponentTheme,
   ComponentUtils;
@@ -43,6 +44,7 @@ type
     procedure CMEnabledChanged(var Msg: TMessage); message CM_ENABLEDCHANGED;
     procedure CMFocusChanged(var Msg: TCMFocusChanged); message CM_FOCUSCHANGED;
     procedure WMEraseBkgnd(var Msg: TWMEraseBkgnd); message WM_ERASEBKGND;
+    procedure WMGetObject(var Msg: TMessage); message WM_GETOBJECT;
   protected
     procedure Paint; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
@@ -93,6 +95,27 @@ begin
   Height := 40;
   Cursor := crHandPoint;
   FEstilo := ebSecundario;
+end;
+
+procedure TRoundButton.WMGetObject(var Msg: TMessage);
+begin
+  // Para leitores de tela: botão de verdade, com nome, estado e ação.
+  if not ResponderGetObject(Self, Msg,
+    function: TDadosAcessiveis
+    begin
+      if Caption <> '' then
+        Result := NovosDados(Caption, PAPEL_BOTAO)
+      else
+        Result := NovosDados(Hint, PAPEL_BOTAO);
+      if (Hint <> '') and (Hint <> Result.Nome) then
+        Result.Descricao := Hint;
+    end,
+    procedure
+    begin
+      if Enabled then
+        Click;
+    end) then
+    inherited;
 end;
 
 procedure TRoundButton.SetIcone(const AValue: TIcone);

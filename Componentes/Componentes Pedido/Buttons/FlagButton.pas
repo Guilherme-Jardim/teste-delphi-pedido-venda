@@ -17,6 +17,7 @@ uses
   System.Types,
   Vcl.Controls,
   Vcl.Graphics,
+  ComponentAccess,
   ComponentTheme,
   ComponentUtils,
   ComponentIcons;
@@ -37,6 +38,7 @@ type
     procedure CMMouseLeave(var Msg: TMessage); message CM_MOUSELEAVE;
     procedure CMFocusChanged(var Msg: TCMFocusChanged); message CM_FOCUSCHANGED;
     procedure WMEraseBkgnd(var Msg: TWMEraseBkgnd); message WM_ERASEBKGND;
+    procedure WMGetObject(var Msg: TMessage); message WM_GETOBJECT;
     procedure DesenharBandeira(G: TGPGraphics; X, Y, D: Single);
   protected
     procedure Paint; override;
@@ -84,6 +86,27 @@ begin
   Cursor := crHandPoint;
 end;
 
+procedure TFlagButton.WMGetObject(var Msg: TMessage);
+begin
+  // A bandeira do idioma em uso aparece como "marcada" (botão de opção).
+  if not ResponderGetObject(Self, Msg,
+    function: TDadosAcessiveis
+    begin
+      if Caption <> '' then
+        Result := NovosDados(Caption, PAPEL_RADIO)
+      else
+        Result := NovosDados(Hint, PAPEL_RADIO);
+      if FAtivo then
+        Result.Estado := ESTADO_MARCADO;
+    end,
+    procedure
+    begin
+      if Enabled then
+        Click;
+    end) then
+    inherited;
+end;
+
 procedure TFlagButton.SetBandeira(const AValue: TBandeira);
 begin
   FBandeira := AValue;
@@ -94,6 +117,7 @@ procedure TFlagButton.SetAtivo(const AValue: Boolean);
 begin
   FAtivo := AValue;
   Invalidate;
+  AvisarMudanca(Self, EVENTO_VALOR_MUDOU);
 end;
 
 procedure TFlagButton.CMMouseEnter(var Msg: TMessage);

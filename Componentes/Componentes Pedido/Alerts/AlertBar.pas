@@ -17,6 +17,7 @@ uses
   Vcl.Forms,
   Vcl.StdCtrls,
   Vcl.Grids,
+  ComponentAccess,
   ComponentIcons,
   ComponentTheme,
   ComponentUtils;
@@ -30,6 +31,7 @@ type
     FMensagem: string;
     FTipo: TTipoAviso;
     procedure WMEraseBkgnd(var Msg: TWMEraseBkgnd); message WM_ERASEBKGND;
+    procedure WMGetObject(var Msg: TMessage); message WM_GETOBJECT;
   protected
     procedure Paint; override;
   public
@@ -70,11 +72,27 @@ begin
   Msg.Result := 1;
 end;
 
+procedure TAlertBar.WMGetObject(var Msg: TMessage);
+begin
+  if not ResponderGetObject(Self, Msg,
+    function: TDadosAcessiveis
+    begin
+      Result := NovosDados(FMensagem, PAPEL_ALERTA);
+      Result.Atento := True;
+      if FMensagem = '' then
+        Result.Estado := ESTADO_INVISIVEL;
+    end) then
+    inherited;
+end;
+
 procedure TAlertBar.Mostrar(const AMensagem: string; ATipo: TTipoAviso);
 begin
   FMensagem := AMensagem;
   FTipo := ATipo;
   Invalidate;
+  // Leitores de tela anunciam o aviso sem a pessoa precisar procurá-lo.
+  AvisarMudanca(Self, EVENTO_ALERTA);
+  AvisarMudanca(Self, EVENTO_NOME_MUDOU);
 end;
 
 procedure TAlertBar.Limpar;

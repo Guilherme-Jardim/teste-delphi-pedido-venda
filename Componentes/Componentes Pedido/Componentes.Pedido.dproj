@@ -99,6 +99,7 @@
         <DCCReference Include="Core\ComponentTheme.pas"/>
         <DCCReference Include="Core\ComponentIcons.pas"/>
         <DCCReference Include="Core\ComponentUtils.pas"/>
+        <DCCReference Include="Core\ComponentAccess.pas"/>
         <DCCReference Include="Buttons\RoundButton.pas"/>
         <DCCReference Include="Buttons\FlagButton.pas"/>
         <DCCReference Include="Cards\InfoCard.pas"/>

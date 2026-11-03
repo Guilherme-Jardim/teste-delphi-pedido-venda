@@ -17,6 +17,7 @@ uses
   Vcl.Forms,
   Vcl.StdCtrls,
   Vcl.Grids,
+  ComponentAccess,
   ComponentIcons,
   ComponentTheme,
   ComponentUtils;
@@ -30,6 +31,7 @@ type
     procedure SetTitulo(const AValue: string);
     procedure SetIcone(const AValue: TIcone);
     procedure WMEraseBkgnd(var Msg: TWMEraseBkgnd); message WM_ERASEBKGND;
+    procedure WMGetObject(var Msg: TMessage); message WM_GETOBJECT;
   protected
     procedure Paint; override;
   public
@@ -56,6 +58,17 @@ begin
 end;
 
 { TInfoCard }
+
+procedure TInfoCard.WMGetObject(var Msg: TMessage);
+begin
+  // O título é desenhado, então o grupo recebe o título como nome.
+  if not ResponderGetObject(Self, Msg,
+    function: TDadosAcessiveis
+    begin
+      Result := NovosDados(FTitulo, PAPEL_AGRUPAMENTO);
+    end) then
+    inherited;
+end;
 
 constructor TInfoCard.Create(AOwner: TComponent);
 begin
