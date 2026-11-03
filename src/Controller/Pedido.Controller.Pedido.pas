@@ -68,6 +68,8 @@ begin
     raise EValidacao.Create(Tr('msg.sem_cliente'));
   if APedido.Itens.Count = 0 then
     raise EValidacao.Create(Tr('msg.sem_itens'));
+  if Length(APedido.Observacao) > OBSERVACAO_TAMANHO_MAXIMO then
+    raise EValidacao.Create(Tr('msg.obs_longa', [OBSERVACAO_TAMANHO_MAXIMO]));
 
   // Garante que o cliente ainda existe antes de abrir a transação.
   Cliente := FClientes.GetCliente(APedido.CodigoCliente);

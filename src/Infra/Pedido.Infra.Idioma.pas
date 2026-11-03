@@ -32,7 +32,7 @@ type
   end;
 
 const
-  TEXTOS: array[0..150] of TTexto = (
+  TEXTOS: array[0..151] of TTexto = (
     // Tela principal
     (Chave: 'app.titulo'; Es: 'Pedido de Venta'; Pt: 'Pedido de Venda'),
     (Chave: 'app.subtitulo'; Es: 'Indica el cliente, agrega los ítems y guarda el pedido';
@@ -128,6 +128,8 @@ const
     (Chave: 'msg.gravado'; Es: '¡Pedido %d guardado con éxito!'; Pt: 'Pedido %d gravado com sucesso!'),
     (Chave: 'msg.sem_cliente'; Es: 'Primero indica el cliente del pedido.';
       Pt: 'Primeiro informe o cliente do pedido.'),
+    (Chave: 'msg.obs_longa'; Es: 'La observación puede tener hasta %d caracteres.';
+      Pt: 'A observação pode ter até %d caracteres.'),
     (Chave: 'msg.sem_itens'; Es: 'Agrega al menos un ítem al pedido.';
       Pt: 'Adicione pelo menos um item ao pedido.'),
     (Chave: 'msg.qtd_maior_zero'; Es: 'La cantidad debe ser mayor que cero.';

@@ -6,6 +6,10 @@ uses
   System.Generics.Collections,
   Pedido.Model.PedidoItem;
 
+const
+  // Tamanho da coluna PEDIDO.OBSERVACAO.
+  OBSERVACAO_TAMANHO_MAXIMO = 200;
+
 type
   TPedidoModel = class
   private

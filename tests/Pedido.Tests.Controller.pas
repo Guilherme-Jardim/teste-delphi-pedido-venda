@@ -46,6 +46,8 @@ type
     [Test]
     procedure GravarSemItensEInvalidoENaoChegaNoDAO;
     [Test]
+    procedure GravarComObservacaoLongaEInvalidoENaoChegaNoDAO;
+    [Test]
     procedure GravarComClienteInexistenteNaoChegaNoDAO;
     [Test]
     procedure GravarPedidoValidoChamaODAOEDefineONumero;
@@ -195,6 +197,22 @@ begin
       FController.Gravar(FPedido);
     end, EValidacao);
   Assert.AreEqual(0, FPedidosDAO.Gravacoes);
+end;
+
+procedure TTestesController.GravarComObservacaoLongaEInvalidoENaoChegaNoDAO;
+begin
+  FPedido.CodigoCliente := 1;
+  FPedido.AdicionarItem(FController.CriarItem(10, 1, 39.9));
+  FPedido.Observacao := StringOfChar('x', OBSERVACAO_TAMANHO_MAXIMO + 1);
+  Assert.WillRaise(
+    procedure
+    begin
+      FController.Gravar(FPedido);
+    end, EValidacao);
+  Assert.AreEqual(0, FPedidosDAO.Gravacoes);
+  FPedido.Observacao := StringOfChar('x', OBSERVACAO_TAMANHO_MAXIMO);
+  FController.Gravar(FPedido);
+  Assert.AreEqual(1, FPedidosDAO.Gravacoes);
 end;
 
 procedure TTestesController.GravarComClienteInexistenteNaoChegaNoDAO;
