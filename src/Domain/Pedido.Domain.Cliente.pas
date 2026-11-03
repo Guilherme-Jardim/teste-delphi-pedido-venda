@@ -1,9 +1,11 @@
-﻿unit Pedido.Model.Cliente;
+﻿unit Pedido.Domain.Cliente;
 
 interface
 
 type
-  TClienteModel = class
+  // Entidade: o cliente é identificado pelo código. Neste sistema não há cadastro
+  // (só consulta), então a entidade é imutável.
+  TCliente = class
   private
     FCodigo: Integer;
     FNome: string;
@@ -19,7 +21,7 @@ type
 
 implementation
 
-constructor TClienteModel.Create(ACodigo: Integer; const ANome, ACidade, AUF: string);
+constructor TCliente.Create(ACodigo: Integer; const ANome, ACidade, AUF: string);
 begin
   inherited Create;
   FCodigo := ACodigo;
