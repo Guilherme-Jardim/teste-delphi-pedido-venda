@@ -1,6 +1,8 @@
 ﻿unit Pedido.Infra.Conexao;
 
-{ Monta a conexão FireDAC com Firebird a partir da configuração lida do INI. }
+{ Monta a conexão FireDAC com Firebird a partir da configuração. Nenhum texto
+  digitado entra em SQL: usuário, senha, servidor e caminho do banco vão como
+  parâmetros de conexão do próprio FireDAC. }
 
 interface
 
@@ -12,7 +14,9 @@ uses
 type
   TFabricaConexao = class
   public
-    class function Criar(const AConfig: TConfigBanco; AOwner: TComponent): TFDConnection;
+    // ACriarBanco = True pede ao FireDAC para criar o arquivo do banco ao conectar.
+    class function Criar(const AConfig: TConfigBanco; AOwner: TComponent;
+      ACriarBanco: Boolean = False): TFDConnection;
   end;
 
 implementation
@@ -39,8 +43,8 @@ uses
 
 { TFabricaConexao }
 
-class function TFabricaConexao.Criar(const AConfig: TConfigBanco;
-  AOwner: TComponent): TFDConnection;
+class function TFabricaConexao.Criar(const AConfig: TConfigBanco; AOwner: TComponent;
+  ACriarBanco: Boolean): TFDConnection;
 var
   Driver: TFDPhysFBDriverLink;
 begin
@@ -62,6 +66,11 @@ begin
   begin
     Result.Params.Values['Server'] := AConfig.Server;
     Result.Params.Values['Port'] := IntToStr(AConfig.Port);
+  end;
+  if ACriarBanco then
+  begin
+    Result.Params.Values['CreateDatabase'] := 'Yes';
+    Result.Params.Values['PageSize'] := '8192';
   end;
 end;
 
