@@ -1,16 +1,16 @@
-﻿unit Pedido.Repository.Produto;
+﻿unit Pedido.DAO.Produto;
 
 interface
 
 uses
-  Pedido.Model.Produto,
-  Pedido.Repository.Base,
-  Pedido.Repository.Interfaces;
+  Pedido.DAO.Base,
+  Pedido.Model.Produto;
 
 type
-  TProdutoRepository = class(TRepositorioBase, IProdutoRepository)
+  TProdutoDAO = class(TDAOBase)
   public
-    function BuscarPorCodigo(ACodigo: Integer): TProduto;
+    // Devolve nil quando o produto não existe. Quem chama é dono do objeto.
+    function GetProduto(ACodigo: Integer): TProdutoModel;
   end;
 
 implementation
@@ -22,7 +22,7 @@ const
   SQL_POR_CODIGO =
     'SELECT CODIGO, DESCRICAO, PRECO_VENDA FROM PRODUTO WHERE CODIGO = :CODIGO';
 
-function TProdutoRepository.BuscarPorCodigo(ACodigo: Integer): TProduto;
+function TProdutoDAO.GetProduto(ACodigo: Integer): TProdutoModel;
 var
   Query: TFDQuery;
 begin
@@ -32,7 +32,7 @@ begin
     Query.ParamByName('CODIGO').AsInteger := ACodigo;
     Query.Open;
     if not Query.IsEmpty then
-      Result := TProduto.Create(
+      Result := TProdutoModel.Create(
         Query.FieldByName('CODIGO').AsInteger,
         Query.FieldByName('DESCRICAO').AsString,
         Query.FieldByName('PRECO_VENDA').AsCurrency);

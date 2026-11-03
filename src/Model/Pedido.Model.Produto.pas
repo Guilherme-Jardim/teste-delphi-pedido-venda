@@ -3,7 +3,7 @@
 interface
 
 type
-  TProduto = class
+  TProdutoModel = class
   private
     FCodigo: Integer;
     FDescricao: string;
@@ -17,7 +17,7 @@ type
 
 implementation
 
-constructor TProduto.Create(ACodigo: Integer; const ADescricao: string;
+constructor TProdutoModel.Create(ACodigo: Integer; const ADescricao: string;
   APrecoVenda: Currency);
 begin
   inherited Create;

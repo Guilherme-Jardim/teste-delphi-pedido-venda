@@ -29,25 +29,28 @@ type
 
 implementation
 
+uses
+  Pedido.Infra.Idioma;
+
 { EClienteNaoEncontrado }
 
 constructor EClienteNaoEncontrado.Create(ACodigo: Integer);
 begin
-  inherited CreateFmt('Cliente %d não encontrado.', [ACodigo]);
+  inherited Create(Tr('msg.cliente_nao_encontrado', [ACodigo]));
 end;
 
 { EProdutoNaoEncontrado }
 
 constructor EProdutoNaoEncontrado.Create(ACodigo: Integer);
 begin
-  inherited CreateFmt('Produto %d não encontrado.', [ACodigo]);
+  inherited Create(Tr('msg.produto_nao_encontrado', [ACodigo]));
 end;
 
 { EPedidoNaoEncontrado }
 
 constructor EPedidoNaoEncontrado.Create(ANumero: Integer);
 begin
-  inherited CreateFmt('Pedido %d não encontrado.', [ANumero]);
+  inherited Create(Tr('msg.pedido_nao_encontrado', [ANumero]));
 end;
 
 end.

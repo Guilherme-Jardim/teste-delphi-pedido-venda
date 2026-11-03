@@ -1,156 +1,103 @@
 ﻿unit Pedido.Controller.Pedido;
 
-{ Mantém o pedido em edição e coordena tela e service.
-  A tela só pergunta e mostra; as decisões ficam aqui e no service. }
+{ Regras de negócio do pedido. Não tem SQL (fica no DAO) nem conhece a tela. }
 
 interface
 
 uses
-  Pedido.Model.Cliente,
-  Pedido.Model.Produto,
+  FireDAC.Comp.Client,
+  Pedido.Controller.Cliente,
+  Pedido.Controller.Produto,
+  Pedido.DAO.Pedido,
   Pedido.Model.Pedido,
-  Pedido.Model.PedidoItem,
-  Pedido.Service.Pedido;
+  Pedido.Model.PedidoItem;
 
 type
   TPedidoController = class
   private
-    FService: TPedidoService;
-    FPedido: TPedido;
-    FIndiceEmEdicao: Integer;
+    FPedidoDAO: TPedidoDAO;
+    FClienteController: TClienteController;
+    FProdutoController: TProdutoController;
   public
-    constructor Create(AService: TPedidoService);
+    constructor Create(AConexao: TFDConnection);
     destructor Destroy; override;
 
-    procedure NovoPedido;
-    procedure CarregarPedido(ANumero: Integer);
-    procedure CancelarPedido(ANumero: Integer);
-    procedure GravarPedido;
+    // Monta o item a partir do cadastro do produto (descrição vem do banco).
+    function CriarItem(ACodigoProduto: Integer; AQuantidade: Double;
+      AVlrUnitario: Currency): TPedidoItemModel;
 
-    function InformarCliente(ACodigo: Integer): TCliente;
-    function ConsultarProduto(ACodigo: Integer): TProduto;
-
-    // Inclui um item novo ou, se um item foi carregado para edição,
-    // atualiza esse item. Devolve o índice afetado.
-    function SalvarItem(ACodigoProduto: Integer; AQuantidade: Double;
-      AVlrUnitario: Currency): Integer;
-    function IniciarEdicaoItem(AIndice: Integer): TPedidoItem;
-    procedure CancelarEdicaoItem;
-    procedure ExcluirItem(AIndice: Integer);
-
-    function EmEdicao: Boolean;
-    property Pedido: TPedido read FPedido;
+    procedure Gravar(APedido: TPedidoModel);
+    // Levanta EPedidoNaoEncontrado se o número não existir.
+    function GetPedido(ANumero: Integer): TPedidoModel;
+    procedure Cancelar(ANumero: Integer);
   end;
 
 implementation
 
 uses
+  Pedido.Infra.Idioma,
+  Pedido.Model.Cliente,
+  Pedido.Model.Produto,
   Pedido.Model.Excecoes;
 
-constructor TPedidoController.Create(AService: TPedidoService);
+constructor TPedidoController.Create(AConexao: TFDConnection);
 begin
   inherited Create;
-  FService := AService;
-  NovoPedido;
+  FPedidoDAO := TPedidoDAO.Create(AConexao);
+  FClienteController := TClienteController.Create(AConexao);
+  FProdutoController := TProdutoController.Create(AConexao);
 end;
 
 destructor TPedidoController.Destroy;
 begin
-  FPedido.Free;
+  FProdutoController.Free;
+  FClienteController.Free;
+  FPedidoDAO.Free;
   inherited;
 end;
 
-procedure TPedidoController.NovoPedido;
-begin
-  FPedido.Free;
-  FPedido := TPedido.Create;
-  FIndiceEmEdicao := -1;
-end;
-
-procedure TPedidoController.CarregarPedido(ANumero: Integer);
+function TPedidoController.CriarItem(ACodigoProduto: Integer; AQuantidade: Double;
+  AVlrUnitario: Currency): TPedidoItemModel;
 var
-  Carregado: TPedido;
+  Produto: TProdutoModel;
 begin
-  Carregado := FService.CarregarPedido(ANumero);
-  FPedido.Free;
-  FPedido := Carregado;
-  FIndiceEmEdicao := -1;
-end;
-
-procedure TPedidoController.CancelarPedido(ANumero: Integer);
-begin
-  FService.CancelarPedido(ANumero);
-  // Se o pedido cancelado era o que estava na tela, limpa a tela.
-  if FPedido.Numero = ANumero then
-    NovoPedido;
-end;
-
-procedure TPedidoController.GravarPedido;
-begin
-  FService.GravarPedido(FPedido);
-end;
-
-function TPedidoController.InformarCliente(ACodigo: Integer): TCliente;
-begin
-  Result := FService.BuscarCliente(ACodigo);
-  FPedido.CodigoCliente := Result.Codigo;
-end;
-
-function TPedidoController.ConsultarProduto(ACodigo: Integer): TProduto;
-begin
-  Result := FService.BuscarProduto(ACodigo);
-end;
-
-function TPedidoController.SalvarItem(ACodigoProduto: Integer; AQuantidade: Double;
-  AVlrUnitario: Currency): Integer;
-var
-  Produto: TProduto;
-  Item: TPedidoItem;
-begin
-  Produto := FService.BuscarProduto(ACodigoProduto);
+  Produto := FProdutoController.GetProduto(ACodigoProduto);
   try
-    Item := TPedidoItem.Create(Produto.Codigo, Produto.Descricao, AQuantidade,
-      AVlrUnitario);
+    Result := TPedidoItemModel.Create(Produto.Codigo, Produto.Descricao,
+      AQuantidade, AVlrUnitario);
   finally
     Produto.Free;
   end;
-
-  if FIndiceEmEdicao >= 0 then
-  begin
-    Result := FIndiceEmEdicao;
-    FPedido.AtualizarItem(Result, Item);
-    FIndiceEmEdicao := -1;
-  end
-  else
-    Result := FPedido.AdicionarItem(Item);
 end;
 
-function TPedidoController.IniciarEdicaoItem(AIndice: Integer): TPedidoItem;
+procedure TPedidoController.Gravar(APedido: TPedidoModel);
+var
+  Cliente: TClienteModel;
 begin
-  if (AIndice < 0) or (AIndice >= FPedido.Itens.Count) then
-    raise EValidacao.Create('Selecione um item do grid.');
-  FIndiceEmEdicao := AIndice;
-  Result := FPedido.Itens[AIndice];
+  if APedido.CodigoCliente <= 0 then
+    raise EValidacao.Create(Tr('msg.sem_cliente'));
+  if APedido.Itens.Count = 0 then
+    raise EValidacao.Create(Tr('msg.sem_itens'));
+
+  // Garante que o cliente ainda existe antes de abrir a transação.
+  Cliente := FClienteController.GetCliente(APedido.CodigoCliente);
+  Cliente.Free;
+
+  FPedidoDAO.Gravar(APedido);
 end;
 
-procedure TPedidoController.CancelarEdicaoItem;
+function TPedidoController.GetPedido(ANumero: Integer): TPedidoModel;
 begin
-  FIndiceEmEdicao := -1;
+  Result := FPedidoDAO.GetPedido(ANumero);
+  if Result = nil then
+    raise EPedidoNaoEncontrado.Create(ANumero);
 end;
 
-procedure TPedidoController.ExcluirItem(AIndice: Integer);
+procedure TPedidoController.Cancelar(ANumero: Integer);
 begin
-  FPedido.RemoverItem(AIndice);
-  // Se o item excluído estava em edição (ou ficou antes dele), ajusta o índice.
-  if FIndiceEmEdicao = AIndice then
-    FIndiceEmEdicao := -1
-  else if (FIndiceEmEdicao > AIndice) then
-    Dec(FIndiceEmEdicao);
-end;
-
-function TPedidoController.EmEdicao: Boolean;
-begin
-  Result := FIndiceEmEdicao >= 0;
+  if ANumero <= 0 then
+    raise EValidacao.Create(Tr('msg.numero_invalido'));
+  FPedidoDAO.Excluir(ANumero);
 end;
 
 end.

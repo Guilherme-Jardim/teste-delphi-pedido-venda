@@ -1,16 +1,18 @@
-﻿unit Pedido.Repository.Base;
+﻿unit Pedido.DAO.Base;
+
+{ Base dos DAOs: guarda a conexão e cria queries parametrizadas.
+  Todo SQL do sistema fica nos DAOs. }
 
 interface
 
 uses
-  System.Classes,
   FireDAC.Comp.Client;
 
 type
-  TRepositorioBase = class(TInterfacedObject)
+  TDAOBase = class
   protected
     FConexao: TFDConnection;
-    // Cria uma query já ligada à conexão. Quem chama deve liberar.
+    // Cria uma query ligada à conexão. Quem chama deve liberar.
     function NovaQuery(const ASql: string): TFDQuery;
   public
     constructor Create(AConexao: TFDConnection);
@@ -18,13 +20,13 @@ type
 
 implementation
 
-constructor TRepositorioBase.Create(AConexao: TFDConnection);
+constructor TDAOBase.Create(AConexao: TFDConnection);
 begin
   inherited Create;
   FConexao := AConexao;
 end;
 
-function TRepositorioBase.NovaQuery(const ASql: string): TFDQuery;
+function TDAOBase.NovaQuery(const ASql: string): TFDQuery;
 begin
   Result := TFDQuery.Create(nil);
   try

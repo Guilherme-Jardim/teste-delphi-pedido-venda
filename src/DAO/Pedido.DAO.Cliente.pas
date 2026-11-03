@@ -1,16 +1,16 @@
-﻿unit Pedido.Repository.Cliente;
+﻿unit Pedido.DAO.Cliente;
 
 interface
 
 uses
-  Pedido.Model.Cliente,
-  Pedido.Repository.Base,
-  Pedido.Repository.Interfaces;
+  Pedido.DAO.Base,
+  Pedido.Model.Cliente;
 
 type
-  TClienteRepository = class(TRepositorioBase, IClienteRepository)
+  TClienteDAO = class(TDAOBase)
   public
-    function BuscarPorCodigo(ACodigo: Integer): TCliente;
+    // Devolve nil quando o cliente não existe. Quem chama é dono do objeto.
+    function GetCliente(ACodigo: Integer): TClienteModel;
   end;
 
 implementation
@@ -22,7 +22,7 @@ const
   SQL_POR_CODIGO =
     'SELECT CODIGO, NOME, CIDADE, UF FROM CLIENTE WHERE CODIGO = :CODIGO';
 
-function TClienteRepository.BuscarPorCodigo(ACodigo: Integer): TCliente;
+function TClienteDAO.GetCliente(ACodigo: Integer): TClienteModel;
 var
   Query: TFDQuery;
 begin
@@ -32,7 +32,7 @@ begin
     Query.ParamByName('CODIGO').AsInteger := ACodigo;
     Query.Open;
     if not Query.IsEmpty then
-      Result := TCliente.Create(
+      Result := TClienteModel.Create(
         Query.FieldByName('CODIGO').AsInteger,
         Query.FieldByName('NOME').AsString,
         Query.FieldByName('CIDADE').AsString,

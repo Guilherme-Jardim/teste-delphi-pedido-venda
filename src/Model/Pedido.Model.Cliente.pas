@@ -3,7 +3,7 @@
 interface
 
 type
-  TCliente = class
+  TClienteModel = class
   private
     FCodigo: Integer;
     FNome: string;
@@ -19,7 +19,7 @@ type
 
 implementation
 
-constructor TCliente.Create(ACodigo: Integer; const ANome, ACidade, AUF: string);
+constructor TClienteModel.Create(ACodigo: Integer; const ANome, ACidade, AUF: string);
 begin
   inherited Create;
   FCodigo := ACodigo;

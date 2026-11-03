@@ -1,24 +1,26 @@
-﻿unit Pedido.Repository.Pedido;
+﻿unit Pedido.DAO.Pedido;
 
 interface
 
 uses
-  Pedido.Model.Pedido,
-  Pedido.Repository.Base,
-  Pedido.Repository.Interfaces;
+  Pedido.DAO.Base,
+  Pedido.Model.Pedido;
 
 type
-  TPedidoRepository = class(TRepositorioBase, IPedidoRepository)
+  TPedidoDAO = class(TDAOBase)
   private
     function ProximoNumero: Integer;
-    procedure InserirCabecalho(APedido: TPedido);
-    procedure AtualizarCabecalho(APedido: TPedido);
+    procedure InserirCabecalho(APedido: TPedidoModel);
+    procedure AtualizarCabecalho(APedido: TPedidoModel);
     procedure ExcluirItens(ANumero: Integer);
-    procedure InserirItens(APedido: TPedido);
-    procedure CarregarItens(APedido: TPedido);
+    procedure InserirItens(APedido: TPedidoModel);
+    procedure CarregarItens(APedido: TPedidoModel);
   public
-    procedure Gravar(APedido: TPedido);
-    function BuscarPorNumero(ANumero: Integer): TPedido;
+    // Grava cabeçalho e itens na mesma transação (commit ou rollback).
+    // Em pedido novo (Numero = 0) o número vem do generator.
+    procedure Gravar(APedido: TPedidoModel);
+    // Devolve nil quando não existe. Quem chama é dono do objeto.
+    function GetPedido(ANumero: Integer): TPedidoModel;
     procedure Excluir(ANumero: Integer);
   end;
 
@@ -27,6 +29,8 @@ implementation
 uses
   System.SysUtils,
   FireDAC.Comp.Client,
+  Pedido.Infra.Idioma,
+  Pedido.Infra.Log,
   Pedido.Model.Excecoes,
   Pedido.Model.PedidoItem;
 
@@ -67,9 +71,9 @@ const
   SQL_EXCLUIR_PEDIDO =
     'DELETE FROM PEDIDO WHERE NUMERO_PEDIDO = :NUMERO';
 
-{ TPedidoRepository }
+{ TPedidoDAO }
 
-function TPedidoRepository.ProximoNumero: Integer;
+function TPedidoDAO.ProximoNumero: Integer;
 var
   Query: TFDQuery;
 begin
@@ -82,7 +86,7 @@ begin
   end;
 end;
 
-procedure TPedidoRepository.InserirCabecalho(APedido: TPedido);
+procedure TPedidoDAO.InserirCabecalho(APedido: TPedidoModel);
 var
   Query: TFDQuery;
 begin
@@ -100,7 +104,7 @@ begin
   end;
 end;
 
-procedure TPedidoRepository.AtualizarCabecalho(APedido: TPedido);
+procedure TPedidoDAO.AtualizarCabecalho(APedido: TPedidoModel);
 var
   Query: TFDQuery;
 begin
@@ -119,7 +123,7 @@ begin
   end;
 end;
 
-procedure TPedidoRepository.ExcluirItens(ANumero: Integer);
+procedure TPedidoDAO.ExcluirItens(ANumero: Integer);
 var
   Query: TFDQuery;
 begin
@@ -132,10 +136,10 @@ begin
   end;
 end;
 
-procedure TPedidoRepository.InserirItens(APedido: TPedido);
+procedure TPedidoDAO.InserirItens(APedido: TPedidoModel);
 var
   Query: TFDQuery;
-  Item: TPedidoItem;
+  Item: TPedidoItemModel;
 begin
   Query := NovaQuery(SQL_INSERIR_ITEM);
   try
@@ -153,7 +157,7 @@ begin
   end;
 end;
 
-procedure TPedidoRepository.Gravar(APedido: TPedido);
+procedure TPedidoDAO.Gravar(APedido: TPedidoModel);
 var
   NumeroOriginal: Integer;
 begin
@@ -178,12 +182,15 @@ begin
       APedido.Numero := NumeroOriginal;
       if E is EPedidoErro then
         raise;
-      raise EPersistencia.CreateFmt('Não foi possível gravar o pedido: %s', [E.Message]);
+      begin
+        RegistrarLog('Falha ao gravar o pedido', E);
+        raise EPersistencia.Create(Tr('msg.falha_gravar'));
+      end;
     end;
   end;
 end;
 
-procedure TPedidoRepository.CarregarItens(APedido: TPedido);
+procedure TPedidoDAO.CarregarItens(APedido: TPedidoModel);
 var
   Query: TFDQuery;
 begin
@@ -193,7 +200,7 @@ begin
     Query.Open;
     while not Query.Eof do
     begin
-      APedido.AdicionarItem(TPedidoItem.Create(
+      APedido.AdicionarItem(TPedidoItemModel.Create(
         Query.FieldByName('CODIGO_PRODUTO').AsInteger,
         Query.FieldByName('DESCRICAO').AsString,
         Query.FieldByName('QUANTIDADE').AsFloat,
@@ -205,7 +212,7 @@ begin
   end;
 end;
 
-function TPedidoRepository.BuscarPorNumero(ANumero: Integer): TPedido;
+function TPedidoDAO.GetPedido(ANumero: Integer): TPedidoModel;
 var
   Query: TFDQuery;
 begin
@@ -217,7 +224,7 @@ begin
     if Query.IsEmpty then
       Exit;
 
-    Result := TPedido.Create;
+    Result := TPedidoModel.Create;
     try
       Result.Numero := Query.FieldByName('NUMERO_PEDIDO').AsInteger;
       Result.DataEmissao := Query.FieldByName('DATA_EMISSAO').AsDateTime;
@@ -233,7 +240,7 @@ begin
   end;
 end;
 
-procedure TPedidoRepository.Excluir(ANumero: Integer);
+procedure TPedidoDAO.Excluir(ANumero: Integer);
 var
   Query: TFDQuery;
 begin
@@ -257,7 +264,10 @@ begin
         FConexao.Rollback;
       if E is EPedidoErro then
         raise;
-      raise EPersistencia.CreateFmt('Não foi possível cancelar o pedido: %s', [E.Message]);
+      begin
+        RegistrarLog('Falha ao cancelar o pedido', E);
+        raise EPersistencia.Create(Tr('msg.falha_cancelar'));
+      end;
     end;
   end;
 end;
